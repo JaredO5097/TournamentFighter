@@ -1,0 +1,18 @@
+﻿@page "/"
+@inject NavigationManager Navigation
+
+<PageTitle>TOURNAMENT FIGHTER</PageTitle>
+
+<div id="main-div" class="col">
+    <h1 id="logo">TOURNAMENT FIGHTER</h1>
+    <button class="btn-gold btn-large" @onclick="@(() => Navigation.NavigateTo("/intro"))">Start</button>
+</div>
+
+@code {
+    [CascadingParameter] public MainLayout Layout { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Layout.ToggleLogo(false);
+    }
+}

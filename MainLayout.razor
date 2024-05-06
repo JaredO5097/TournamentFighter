@@ -1,0 +1,35 @@
+﻿@inherits LayoutComponentBase
+
+<CascadingValue Value="this">
+    <header>
+        <nav id="main-nav">
+            @if (logoActive)
+            {
+                <NavLink id="nav-logo" href="">TOURNAMENT FIGHTER</NavLink>
+            }
+            <NavLink href="">About</NavLink>
+            <NavLink href="">Help</NavLink>
+            <NavLink href="">Settings</NavLink>
+        </nav>
+    </header>
+    <main>
+        @Body
+    </main>
+    <footer>
+    </footer>
+</CascadingValue>
+
+@code {
+    private bool logoActive = true;
+
+    public void ToggleLogo(bool active)
+    {
+        logoActive = active;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+}
