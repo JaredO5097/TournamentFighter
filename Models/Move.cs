@@ -14,7 +14,6 @@ namespace TournamentFighter.Models
         [Range(-1, 1)] public int Priority => priority;
         [Range(0, 2)] public int ExtraTurnCost => extraTurnCost;
 
-        private System.Random rng = new();
-        public string NextMessage() => Messages[rng.Next(0, Messages.Length)];
+        public string NextMessage() => Messages[0];
     }
 }

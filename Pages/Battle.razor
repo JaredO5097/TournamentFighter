@@ -32,9 +32,8 @@
         {
             <article class="@(MessageModel.Source == Actor.Opponent ? "dialogue d-opponent" : "dialogue d-plain")">
                 <p>@MessageModel.Message</p>
-                @if (MessageModel.Type == MessageType.PlayerTurn)
+                @if (isPlayersTurn)
                 {
-                    readyForNext = false;
                     foreach (Move move in Player.Moves)
                     {
                         <button class="btn-gold btn-small" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
@@ -78,9 +77,10 @@
 
     private MessageModel MessageModel = MessageModel.Default;
 
+    private bool isPlayersTurn = false;
     private bool readyForNext = true;
 
-    private Move playerSelectedMove = MoveList.None;
+    private Move? playerSelectedMove = null;
     private List<Move> OpponentRevealedMoves = new List<Move>();
 
     private bool showingPlayerStats = false;
@@ -95,12 +95,19 @@
 
     private void ProgressGame()
     {
-        if (playerSelectedMove != MoveList.None)
+        if (playerSelectedMove is not null)
         {
             Game.PlayerTurn(playerSelectedMove);
+            playerSelectedMove = null;
+            isPlayersTurn = false;
         }
-        MessageModel = Game.NextMessage();
-        if (MessageModel == MessageModel.Default)
+        MessageModel = Game.Next();
+        if (MessageModel == MessageModel.PlayerTurn)
+        {
+            isPlayersTurn = true;
+            readyForNext = false;
+        } 
+        else if (MessageModel == MessageModel.Default)
         {
 
         }

@@ -43,6 +43,7 @@ namespace TournamentFighter.Models
             if (_rng.Next(1, SkillCap + 1) > (int)Math.Ceiling(0.15f * Evasion)) // did not evade
             {
                 actualDamage = incomingDamage - (int)(0.75f * Defense);
+                if (actualDamage < 0) { actualDamage = 0; }
             }
             Health -= actualDamage;
             return actualDamage;

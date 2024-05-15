@@ -55,7 +55,7 @@ namespace TournamentFighter.Data
             Health = 100,
             Moves = [MoveList.LongShot, MoveList.ShortShot, MoveList.Punch],
             Agility = 90,
-            Defense = 30,
+            Defense = 20,
             Strength = 60,
             Accuracy = 90,
             Evasion = 90,

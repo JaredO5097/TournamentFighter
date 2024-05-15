@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Frozen;
 using TournamentFighter.Models;
 using TournamentFighter.Data;
 
@@ -22,27 +22,22 @@ namespace TournamentFighter
         Game,
     }
 
-    public enum MessageType
-    {
-        Description,
-        PlayerTurn,
-        TurnResult,
-        GameEnd,
-    }
-
     public record struct Status(Skill Skill, int Modifier, int TurnsUntilExpire, bool Permanent);
 
-    public readonly record struct MessageModel(string Message, Actor Source, MessageType Type)
+    public readonly record struct MessageModel(string Message, Actor Source)
     {
-        public static readonly MessageModel Default = new("", Actor.Game, MessageType.Description);
-        public static readonly MessageModel PlayerTurn = new("What will you do?", Actor.Game, MessageType.PlayerTurn);
+        public static readonly MessageModel Default = new("", Actor.Game);
+        public static readonly MessageModel PlayerTurn = new("What will you do?", Actor.Game);
+        public static readonly MessageModel OpponentTurn = new("", Actor.Opponent);
+        public static readonly MessageModel GameOver = new("Game over!", Actor.Game);
     }
 
+    public readonly record struct TurnResult(string Message, Actor Source, int AddedTurns, int DamageDealt);
 
     public class Game
     {
         private Queue<MessageModel> Messages = new Queue<MessageModel>();
-        private Queue<Actor> Turns = new Queue<Actor>();
+        private bool _isPlayersTurn = false;
 
         private static readonly System.Random rng = new System.Random();
 
@@ -50,19 +45,22 @@ namespace TournamentFighter
         public Character Opponent { get; private set; } = CharacterList.Default;
 
 
-        private static readonly Dictionary<Move, Action<Character, Character>> StandardMoves = new()
+        private static readonly Dictionary<Move, Action<Character, Character>> _standardMoves = new()
         {
             {MoveList.None, (actor, opponent) => { } },
         };
-        public static Move[] GetStandardMoves() => [.. StandardMoves.Keys];
+        private readonly FrozenDictionary<Move, Action<Character, Character>> StandardMoves = _standardMoves.ToFrozenDictionary();
+        public Move[] GetStandardMoves() => [.. StandardMoves.Keys];
 
-        private static readonly Dictionary<Move, Action<Character>> PlacementMoves = new()
+
+        private static readonly Dictionary<Move, Action<Character>> _placementMoves = new()
         {
             {MoveList.Advance, (actor) => { } },
             {MoveList.Retreat, (actor) => { } },
             {MoveList.Dodge, (actor) => actor.ApplyStatus(Skill.Evasion, 100, 1, false) },
         };
-        public static Move[] GetPlacementMoves() => [.. PlacementMoves.Keys];
+        private readonly FrozenDictionary<Move, Action<Character>> PlacementMoves = _placementMoves.ToFrozenDictionary();
+        public Move[] GetPlacementMoves() => [.. PlacementMoves.Keys];
 
         public void SetUpGame(Character playerModel)
         {
@@ -71,93 +69,53 @@ namespace TournamentFighter
             Opponent = CharacterList.Ryalt;
             Messages.Enqueue(new("Let's begin!\n" +
                 "You enter the sandy arena. You see a clear blue sky above, and feel warm sunlight on your skin.\n" +
-                "Opposite you stands " + Opponent.Description, Actor.Game, MessageType.Description));
-            Messages.Enqueue(new(Opponent.OpeningDialogue, Actor.Opponent, MessageType.Description));
-            if (FirstIsFaster(Player, Opponent))
-            {
-                Turns.Enqueue(Actor.Player);
-                Turns.Enqueue(Actor.Opponent);
-            } else
-            {
-                Turns.Enqueue(Actor.Opponent);
-                Turns.Enqueue(Actor.Player);
-            }
+                "Opposite you stands " + Opponent.Description, Actor.Game));
+            Messages.Enqueue(new(Opponent.OpeningDialogue, Actor.Opponent));
+
+            _isPlayersTurn = FirstIsFaster(Player, Opponent);
         }
 
         private static bool FirstIsFaster(in Character a, in Character b) =>
             a.Agility == b.Agility ? rng.Next(0, 2) > 0 : a.Agility > b.Agility;
 
-        public MessageModel NextMessage() 
+        public MessageModel Next() 
         {
             if (Messages.Count == 0)
             {
-                NextTurn();
+                if (_isPlayersTurn)
+                {
+                    Messages.Enqueue(MessageModel.PlayerTurn);
+                } else
+                {
+                    OpponentTurn();
+                }
             }
             return Messages.Dequeue();
         }
 
-        private void NextTurn()
+        public void PlayerTurn(Move move) => TakeTurn(Actor.Player, move);
+
+        private void OpponentTurn() => TakeTurn(Actor.Opponent, MoveList.Punch);
+
+        public void TakeTurn(Actor upNext, Move move)
         {
-            if (Turns.TryPeek(out Actor actor))
+            Character actor = upNext == Actor.Player ? Player : Opponent;
+            Character target = upNext == Actor.Player ? Opponent : Player;
+            if (actor.TurnDelay == 0)
             {
-                if (actor == Actor.Player)
+                if (StandardMoves.TryGetValue(move, out var action))
                 {
-                    Messages.Enqueue(MessageModel.PlayerTurn);
-                }
-                else if (actor == Actor.Opponent)
-                {
-                    OpponentTurn();
+                    action(actor, target);
                 }
                 else
                 {
-                    Messages.Enqueue(new("Game's over I guess!", Actor.Game, MessageType.GameEnd));
+                    int attack = actor.AttackWith(move);
+                    int damage = target.TakeAttack(attack);
+
+                    Messages.Enqueue(new(actor.Name + move.Messages[0], upNext));
+                    Messages.Enqueue(new(target.Name + " takes " + damage + " damage!", upNext));
                 }
-            }
-        }
-
-        public void PlayerTurn(Move move)
-        {
-            if (Player.TurnDelay == 0)
-            {
-                PerformMove(Player, Opponent, move);
-                Turns.Dequeue();
-                Turns.Enqueue(Actor.Player);
-            }
-        }
-
-        private void OpponentTurn()
-        {
-            if (Opponent.TurnDelay == 0)
-            {
-                PerformMove(Opponent, Player, MoveList.Punch);
-                Turns.Dequeue();
-                Turns.Enqueue(Actor.Opponent);
-            }
-        }
-
-        public void Advance(Character actor)
-        {
-
-        }
-
-        public void Retreat(Character actor)
-        {
-
-        }
-
-        public void PerformMove(Character actor, Character target, Move move)
-        {
-            if (StandardMoves.ContainsKey(move))
-            {
-                StandardMoves[move](actor, target);
-            } else
-            {
-                Actor src = actor == Player ? Actor.Player : Actor.Opponent;
-                int attack = actor.AttackWith(move);
-                int damage = target.TakeAttack(attack);
-
-                Messages.Enqueue(new(actor.Name + move.Messages[0], src, MessageType.TurnResult));
-                Messages.Enqueue(new(target.Name + " takes " + damage + " damage!", src, MessageType.TurnResult));
+                _isPlayersTurn = !_isPlayersTurn;
             }
         }
     }
