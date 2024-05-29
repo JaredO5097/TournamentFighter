@@ -53,6 +53,14 @@ body {
     font-size: 2em;
 }
 
+.btn-wrap {
+    padding: 55px 35px 55px 35px;
+    background-image: url("../images/awardleaves.svg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
 .stats {
     border-radius: 10px;
     padding: 15px 55px 15px 55px;

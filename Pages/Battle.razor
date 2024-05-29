@@ -1,74 +1,87 @@
 ﻿@page "/battle"
 @inject Game Game
+@inject NavigationManager Navigation
 
 <PageTitle>Battle!</PageTitle>
 
 <div id="battle-div" class="row-center">
-    <div class="col w-20">
-        <button class="btn-gold btn-small" @onclick="@(() => showingOpponentStats = !showingOpponentStats)">Opponent Stats</button>
-        @if (showingOpponentStats)
-        {
-            <article class="stats s-opponent">
-                <h1>@Opponent.Name</h1>
-                <p>The @Opponent.Tagline</p>
-                <h2>Health ♥</h2>
-                <p>@Opponent.Health</p>
-                <h2>Moves</h2>
-                @if (OpponentRevealedMoves.Count == 0)
-                {
-                    <p>???</p>
-                } else
-                {
-                    @foreach (Move move in OpponentRevealedMoves)
+    @if (gameOver)
+    {
+        <div class="col w-60">
+            <article class="dialogue d-plain">
+                <p>Game over!</p>
+            </article>
+            <button class="btn-gold btn-large" @onclick="NewGame">New Game</button>
+        </div>
+    } else
+    {
+        <div class="col w-20">
+            <button class="btn-gold btn-small" @onclick="@(() => showingOpponentStats = !showingOpponentStats)">Opponent Stats</button>
+            @if (showingOpponentStats)
+            {
+                <article class="stats s-opponent">
+                    <h1>@Opponent.Name</h1>
+                    <p>The @Opponent.Tagline</p>
+                    <h2>Health ♥</h2>
+                    <p>@Opponent.Health</p>
+                    <h2>Moves</h2>
+                    @if (OpponentRevealedMoves.Count == 0)
+                    {
+                        <p>???</p>
+                    }
+                    else
+                    {
+                        @foreach (Move move in OpponentRevealedMoves.Keys)
+                        {
+                            <p>@move.Name</p>
+                        }
+                    }
+                </article>
+            }
+        </div>
+        <div class="col w-60">
+            @if (!MessageModel.Equals(MessageModel.Default))
+            {
+                <article class="@(MessageModel.Source == Actor.Opponent ? "dialogue d-opponent" : "dialogue d-plain")">
+                    <p>@MessageModel.Message</p>
+                    @if (isPlayersTurn)
+                    {
+                        foreach (Move move in Player.Moves)
+                        {
+                            <button class="btn-gold btn-small" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
+                        }
+                    }
+                </article>
+            }
+            @if (readyForNext)
+            {
+                <button class="btn-gold btn-large" @onclick="ProgressGame">Next</button>
+            }
+        </div>
+        <div class="col w-20">
+            <button class="btn-gold btn-small" @onclick="@(() => showingPlayerStats = !showingPlayerStats)">Your Stats</button>
+            @if (showingPlayerStats)
+            {
+                <article class="stats s-plain">
+                    <h1>@Player.Name</h1>
+                    <p>The @Player.Tagline</p>
+                    <h2>Health ♥</h2>
+                    <p>@Player.Health</p>
+                    <h2>Moves</h2>
+                    @foreach (Move move in Player.Moves)
                     {
                         <p>@move.Name</p>
                     }
-                }
-            </article>
-        }
-    </div>
-    <div class="col w-60">
-        @if (!MessageModel.Equals(MessageModel.Default))
-        {
-            <article class="@(MessageModel.Source == Actor.Opponent ? "dialogue d-opponent" : "dialogue d-plain")">
-                <p>@MessageModel.Message</p>
-                @if (isPlayersTurn)
-                {
-                    foreach (Move move in Player.Moves)
-                    {
-                        <button class="btn-gold btn-small" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
-                    }
-                }
-            </article>
-        }
-        @if (readyForNext)
-        {
-            <button class="btn-gold btn-large" @onclick="ProgressGame">Next</button>
-        }
-    </div>
-    <div class="col w-20">
-        <button class="btn-gold btn-small" @onclick="@(() => showingPlayerStats = !showingPlayerStats)">Your Stats</button>
-        @if (showingPlayerStats)
-        {
-            <article class="stats s-plain">
-                <h1>@Player.Name</h1>
-                <p>The @Player.Tagline</p>
-                <h2>Health ♥</h2>
-                <p>@Player.Health</p>
-                <h2>Moves</h2>
-                @foreach (Move move in Player.Moves)
-                {
-                    <p>@move.Name</p>
-                }
-                <h2>Stats</h2>
-                <p>Agility: &nbsp @Player.Agility</p>
-                <p>Defense: &nbsp @Player.Defense</p>
-                <p>Strength: &nbsp @Player.Strength</p>
-                <p>Accuracy: &nbsp @Player.Accuracy</p>
-                <p>Evasion: &nbsp @Player.Evasion</p>
-            </article>
-        }
-    </div>
+                    <h2>Stats</h2>
+                    <p>Agility: &nbsp @Player.Agility</p>
+                    <p>Defense: &nbsp @Player.Defense</p>
+                    <p>Strength: &nbsp @Player.Strength</p>
+                    <p>Accuracy: &nbsp @Player.Accuracy</p>
+                    <p>Evasion: &nbsp @Player.Evasion</p>
+                </article>
+            }
+        </div>
+    }
 </div>
 
 @code {
@@ -79,12 +92,13 @@
 
     private bool isPlayersTurn = false;
     private bool readyForNext = true;
+    private bool gameOver = false;
 
-    private Move? playerSelectedMove = null;
-    private List<Move> OpponentRevealedMoves = new List<Move>();
+    private Move playerSelectedMove = Move.None;
+    private Dictionary<Move, bool> OpponentRevealedMoves = new Dictionary<Move, bool>();
 
-    private bool showingPlayerStats = false;
-    private bool showingOpponentStats = false;
+    private bool showingPlayerStats = true;
+    private bool showingOpponentStats = true;
 
     protected override void OnInitialized()
     {
@@ -95,27 +109,50 @@
 
     private void ProgressGame()
     {
-        if (playerSelectedMove is not null)
+        if (!gameOver)
         {
-            Game.PlayerTurn(playerSelectedMove);
-            playerSelectedMove = null;
-            isPlayersTurn = false;
-        }
-        MessageModel = Game.Next();
-        if (MessageModel == MessageModel.PlayerTurn)
-        {
-            isPlayersTurn = true;
-            readyForNext = false;
-        } 
-        else if (MessageModel == MessageModel.Default)
-        {
+            if (playerSelectedMove != Move.None)
+            {
+                Game.PlayerTurn(playerSelectedMove);
+                playerSelectedMove = Move.None;
+                isPlayersTurn = false;
+            }
+            MessageModel = Game.Next();
+            if (MessageModel == MessageModel.GameOver)
+            {
+                gameOver = true;
+            }
+            if (MessageModel.Source == Actor.Opponent)
+            {
+                if (MessageModel.Move != Move.None)
+                {
+                    OpponentRevealedMoves[MessageModel.Move] = true;
+                }
+            }
 
-        }
+            if (MessageModel == MessageModel.PlayerTurn)
+            {
+                isPlayersTurn = true;
+                readyForNext = false;
+            }
+            else if (MessageModel == MessageModel.Default)
+            {
+
+            }
+        }       
     }
 
     private void RecordMove(Move move)
     {
-        playerSelectedMove = move;
-        readyForNext = true;
+        if (!gameOver)
+        {
+            playerSelectedMove = move;
+            readyForNext = true;
+        }
+    }
+
+    private void NewGame()
+    {
+        Navigation.NavigateTo("/intro");
     }
 }
