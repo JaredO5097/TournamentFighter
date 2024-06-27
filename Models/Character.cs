@@ -93,14 +93,10 @@ namespace TournamentFighter.Models
 
         public Move[] Moves = [Move.None];
 
-        private LinkedList<Status> StatusEffects = new LinkedList<Status>();
-        public int TurnDelay { get; private set; } = 0;
-
-        private int _posX = 0;
-        private int _posY = 0;
+        private readonly Queue<Status> StatusEffects = new Queue<Status>();
+        private readonly Queue<Move> Actions = new Queue<Move>();
 
         // Health + Agility + Defense + Strength + Accuracy + Evasion = 400
-
         [Range(0, SkillCap)] public int Health { get; set; }
         [Range(1, SkillCap)]  public int Agility { get; set; }
         [Range(1, SkillCap)] public int Defense { get; set; }
@@ -135,42 +131,23 @@ namespace TournamentFighter.Models
             return 0;
         }
 
-        public void ChangePosition(int dx, int dy)
+        public void QueueMove(Move move)
         {
-            _posX += dx;
-            _posY += dy;
+            Actions.Enqueue(move);
         }
-
-        public void ApplyStatus(Skill skill, int modifier, int turnsUntilExpire, bool permanent)
-        {
-            if (skill != Skill.None) { StatusEffects.Append(new Status(skill, modifier, turnsUntilExpire, permanent)); }
-        }
+        public bool HasActions => Actions.Count > 0;
+        public Move CheckNextAction() => Actions.TryPeek(out Move res) ? res : Move.None;
+        public Move NextAction() => Actions.TryDequeue(out Move res) ? res : Move.None;
 
         public void UpdateStatuses()
         {
-            LinkedListNode<Status>? node = StatusEffects.First;
-            while (node is not null)
+            if (StatusEffects.Count > 0)
             {
-                LinkedListNode<Status>? next = node.Next;
-                if (node.Value.TurnsUntilExpire < 0)
+                Status status = StatusEffects.Dequeue();
+                if (status.Name == StatusName.TurnDelay)
                 {
-                    StatusEffects.Remove(node);
-                } else
-                {
-                    switch (node.Value.Skill)
-                    {
-                        case Skill.Health:
-                            Health += node.Value.Modifier;
-                            return;
-                        case Skill.Agility:
-                            Agility += node.Value.Modifier;
-                            return;
-                        case Skill.Defense:
-                            Defense += node.Value.Modifier;
-                            return;
-                    }
+                    
                 }
-                node = next;
             }
         }
     }

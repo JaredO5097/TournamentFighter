@@ -1,20 +1,7 @@
-﻿using System.Collections.Frozen;
-using TournamentFighter.Models;
-using TournamentFighter.Data;
+﻿using TournamentFighter.Models;
 
 namespace TournamentFighter
 {
-    public enum Skill
-    {
-        None,
-        Health,
-        Agility,
-        Defense,
-        Strength,
-        Accuracy,
-        Evasion,
-    }
-
     public enum Actor
     {
         Player,
@@ -22,7 +9,12 @@ namespace TournamentFighter
         Game,
     }
 
-    public record struct Status(Skill Skill, int Modifier, int TurnsUntilExpire, bool Permanent);
+    public enum StatusName
+    {
+        TurnDelay,
+    }
+
+    public readonly record struct Status(StatusName Name, int TurnsUntilExpire);
 
     public readonly record struct MessageModel(string Message, Actor Source, Move Move)
     {
@@ -36,40 +28,35 @@ namespace TournamentFighter
     public class Game
     {
         private readonly Queue<MessageModel> Messages = new Queue<MessageModel>();
-        private bool _isPlayersTurn = false;
+        private readonly Queue<Actor> Turns = new Queue<Actor>();
 
         private static readonly System.Random rng = new System.Random();
 
         public Character Player { get; private set; } = CharacterList.Default;
         public Character Opponent { get; private set; } = CharacterList.Default;
 
-
-        private readonly FrozenDictionary<Move, Action<Character, Character>> StandardMoves = new Dictionary<Move, Action<Character, Character>>
-        {
-            {Move.None, (actor, opponent) => { } },
-        }.ToFrozenDictionary();
-        public Move[] GetStandardMoves() => [.. StandardMoves.Keys];
-
-        private readonly FrozenDictionary<Move, Action<Character>> PlacementMoves = new Dictionary<Move, Action<Character>>
-        {
-            {Move.Advance, (actor) => { } },
-            {Move.Retreat, (actor) => { } },
-            {Move.Dodge, (actor) => actor.ApplyStatus(Skill.Evasion, 100, 1, false) },
-        }.ToFrozenDictionary();
-        public Move[] GetPlacementMoves() => [.. PlacementMoves.Keys];
-
         public void SetUpGame(Character playerModel)
         {
             Player = playerModel;
             Player.Moves = [Move.Punch, Move.SwordSlash, Move.JumpKick, Move.Counter];
-            Opponent = GetRandom(CharacterList.ToArray());
+            Character[] characters = CharacterList.ToArray();
+            Opponent = GetRandom(ref characters);
             Messages.Clear();
+            Turns.Clear();
             Messages.Enqueue(new("Let's begin!\n" +
                 "You enter the sandy arena. You see a clear blue sky above, and feel warm sunlight on your skin.\n" +
                 "Opposite you stands " + Opponent.Description, Actor.Game, Move.None));
             Messages.Enqueue(new(Opponent.OpeningDialogue, Actor.Opponent, Move.None));
 
-            _isPlayersTurn = FirstIsFaster(Player, Opponent);
+            if (FirstIsFaster(Player, Opponent))
+            {
+                Turns.Enqueue(Actor.Player);
+                Turns.Enqueue(Actor.Opponent);
+            } else
+            {
+                Turns.Enqueue(Actor.Opponent);
+                Turns.Enqueue(Actor.Player);
+            }
         }
 
         private static T GetRandom<T>(ref readonly T[] array) => array[rng.Next(0, array.Length)];
@@ -81,9 +68,23 @@ namespace TournamentFighter
         {
             if (Messages.Count == 0)
             {
-                if (_isPlayersTurn)
+                if (Turns.Peek() == Actor.Player)
                 {
-                    Messages.Enqueue(MessageModel.PlayerTurn);
+                    if (Player.HasActions)
+                    {
+                        PlayerTurn();
+                    } else
+                    {
+                        Messages.Enqueue(MessageModel.PlayerTurn);
+                    }
+                    Move next = Player.CheckNextAction();
+                    if (next == Move.None)
+                    {
+                        
+                    } else
+                    {
+                        PlayerTurn(next);
+                    }
                 } else
                 {
                     OpponentTurn();
@@ -92,6 +93,10 @@ namespace TournamentFighter
             return Messages.Dequeue();
         }
 
+        public void PlayerTurn()
+        {
+
+        }
         public void PlayerTurn(Move move) => TakeTurn(Actor.Player, move);
 
         private void OpponentTurn() => TakeTurn(Actor.Opponent, GetRandom(ref Opponent.Moves));
@@ -100,26 +105,29 @@ namespace TournamentFighter
         {
             Character actor = upNext == Actor.Player ? Player : Opponent;
             Character target = upNext == Actor.Player ? Opponent : Player;
-            if (actor.TurnDelay == 0)
-            {
-                if (StandardMoves.TryGetValue(move, out var action))
-                {
-                    action(actor, target);
-                }
-                else
-                {
-                    int attack = actor.AttackWith(move);
-                    int damage = target.TakeAttack(attack);
 
-                    Messages.Enqueue(new(actor.Name + " " + move.Messages[0], upNext, move));
-                    Messages.Enqueue(new(target.Name + " takes " + damage + " damage!", upNext, move));
-                    if (target.Health <= 0)
-                    {
-                        Messages.Enqueue(MessageModel.GameOver);
-                    }
+            actor.UpdateStatuses();
+            move.Action(actor, target);
+
+            Move actorAction = actor.NextAction();
+            if (actorAction != Move.None)
+            {
+                int attack = actor.AttackWith(move);
+                int damage = target.TakeAttack(attack);
+
+                Messages.Enqueue(new(actor.Name + " " + move.Messages[0], upNext, move));
+                Messages.Enqueue(new(target.Name + " takes " + damage + " damage!", upNext, move));
+                if (target.Health <= 0)
+                {
+                    Messages.Enqueue(new(target.Name + " has been defeated. " + actor.Name + " wins!", upNext, move));
+                    Messages.Enqueue(MessageModel.GameOver);
                 }
-                _isPlayersTurn = !_isPlayersTurn;
+            } else
+            {
+                Messages.Enqueue(new(actor.Name + " does nothing.", upNext, Move.None));
             }
+
+            Turns.Enqueue(Turns.Dequeue());
         }
     }
 }

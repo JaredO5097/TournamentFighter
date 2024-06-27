@@ -67,11 +67,6 @@
                     <p>The @Player.Tagline</p>
                     <h2>Health ♥</h2>
                     <p>@Player.Health</p>
-                    <h2>Moves</h2>
-                    @foreach (Move move in Player.Moves)
-                    {
-                        <p>@move.Name</p>
-                    }
                     <h2>Stats</h2>
                     <p>Agility: &nbsp @Player.Agility</p>
                     <p>Defense: &nbsp @Player.Defense</p>
@@ -134,10 +129,6 @@
             {
                 isPlayersTurn = true;
                 readyForNext = false;
-            }
-            else if (MessageModel == MessageModel.Default)
-            {
-
             }
         }       
     }
