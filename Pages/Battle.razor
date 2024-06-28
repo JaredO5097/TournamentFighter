@@ -40,11 +40,11 @@
             }
         </div>
         <div class="col w-60">
-            @if (!MessageModel.Equals(MessageModel.Default))
+            @if (!CurrentMsg.Equals(MessageModel.Default))
             {
-                <article class="@(MessageModel.Source == Actor.Opponent ? "dialogue d-opponent" : "dialogue d-plain")">
-                    <p>@MessageModel.Message</p>
-                    @if (isPlayersTurn)
+                <article class="@(CurrentMsg.Source == Actor.Opponent ? "dialogue d-opponent" : "dialogue d-plain")">
+                    <p>@CurrentMsg.Message</p>
+                    @if (awaitingInput)
                     {
                         foreach (Move move in Player.Moves)
                         {
@@ -83,9 +83,11 @@
     private Character Player = CharacterList.Default;
     private Character Opponent = CharacterList.Default;
 
-    private MessageModel MessageModel = MessageModel.Default;
+    private Queue<MessageModel> MessageTracker = new Queue<MessageModel>();
 
-    private bool isPlayersTurn = false;
+    private MessageModel CurrentMsg = MessageModel.Default;
+
+    private bool awaitingInput = false;
     private bool readyForNext = true;
     private bool gameOver = false;
 
@@ -99,6 +101,8 @@
     {
         Player = Game.Player;
         Opponent = Game.Opponent;
+        MessageTracker.Clear();
+        Game.Start(MessageTracker);
         ProgressGame();
     }
 
@@ -108,26 +112,26 @@
         {
             if (playerSelectedMove != Move.None)
             {
-                Game.PlayerTurn(playerSelectedMove);
+                Game.RecordPlayerMove(playerSelectedMove);
                 playerSelectedMove = Move.None;
-                isPlayersTurn = false;
-            }
-            MessageModel = Game.Next();
-            if (MessageModel == MessageModel.GameOver)
-            {
-                gameOver = true;
-            }
-            if (MessageModel.Source == Actor.Opponent)
-            {
-                if (MessageModel.Move != Move.None)
-                {
-                    OpponentRevealedMoves[MessageModel.Move] = true;
-                }
+                awaitingInput = false;
             }
 
-            if (MessageModel == MessageModel.PlayerTurn)
+            Game.NextTurn(MessageTracker);
+
+            CurrentMsg = MessageTracker.Dequeue();
+            if (CurrentMsg == MessageModel.GameOver)
             {
-                isPlayersTurn = true;
+                gameOver = true;
+            } else if (CurrentMsg.Source == Actor.Opponent)
+            {
+                if (CurrentMsg.Move != Move.None)
+                {
+                    OpponentRevealedMoves[CurrentMsg.Move] = true;
+                }
+            } else if (CurrentMsg == MessageModel.PlayerTurn)
+            {
+                awaitingInput = true;
                 readyForNext = false;
             }
         }       

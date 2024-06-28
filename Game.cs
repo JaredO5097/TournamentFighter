@@ -1,4 +1,6 @@
-﻿using TournamentFighter.Models;
+﻿using System;
+using System.Numerics;
+using TournamentFighter.Models;
 
 namespace TournamentFighter
 {
@@ -27,28 +29,23 @@ namespace TournamentFighter
 
     public class Game
     {
-        private readonly Queue<MessageModel> Messages = new Queue<MessageModel>();
         private readonly Queue<Actor> Turns = new Queue<Actor>();
 
-        private static readonly System.Random rng = new System.Random();
+        private static readonly Random rng = new Random();
 
         public Character Player { get; private set; } = CharacterList.Default;
         public Character Opponent { get; private set; } = CharacterList.Default;
 
-        public void SetUpGame(Character playerModel)
+        public void SetUp(Character playerModel)
         {
             Player = playerModel;
             Player.Moves = [Move.Punch, Move.SwordSlash, Move.JumpKick, Move.Counter];
             Character[] characters = CharacterList.ToArray();
-            Opponent = GetRandom(ref characters);
-            Messages.Clear();
-            Turns.Clear();
-            Messages.Enqueue(new("Let's begin!\n" +
-                "You enter the sandy arena. You see a clear blue sky above, and feel warm sunlight on your skin.\n" +
-                "Opposite you stands " + Opponent.Description, Actor.Game, Move.None));
-            Messages.Enqueue(new(Opponent.OpeningDialogue, Actor.Opponent, Move.None));
+            Opponent = characters[rng.Next(0, characters.Length)];
 
-            if (FirstIsFaster(Player, Opponent))
+            Turns.Clear();
+            bool playerFaster = Player.Agility == Opponent.Agility ? rng.Next(0, 2) > 0 : Player.Agility > Opponent.Agility;
+            if (playerFaster)
             {
                 Turns.Enqueue(Actor.Player);
                 Turns.Enqueue(Actor.Opponent);
@@ -59,75 +56,58 @@ namespace TournamentFighter
             }
         }
 
-        private static T GetRandom<T>(ref readonly T[] array) => array[rng.Next(0, array.Length)];
-
-        private static bool FirstIsFaster(in Character a, in Character b) =>
-            a.Agility == b.Agility ? rng.Next(0, 2) > 0 : a.Agility > b.Agility;
-
-        public MessageModel Next() 
+        public void Start(Queue<MessageModel> tracker)
         {
-            if (Messages.Count == 0)
+            tracker.Enqueue(new("Let's begin!\n" +
+                "You enter the sandy arena. You see a clear blue sky above, and feel warm sunlight on your skin.\n" +
+                "Opposite you stands " + Opponent.Description, Actor.Game, Move.None));
+            tracker.Enqueue(new(Opponent.OpeningDialogue, Actor.Opponent, Move.None));
+        }
+
+        public void RecordPlayerMove(Move move) => move.Action(Player);
+
+        public void NextTurn(Queue<MessageModel> tracker) 
+        {
+            if (Turns.Peek() == Actor.Player)
             {
-                if (Turns.Peek() == Actor.Player)
+                if (!Player.HasActions)
                 {
-                    if (Player.HasActions)
-                    {
-                        PlayerTurn();
-                    } else
-                    {
-                        Messages.Enqueue(MessageModel.PlayerTurn);
-                    }
-                    Move next = Player.CheckNextAction();
-                    if (next == Move.None)
-                    {
-                        
-                    } else
-                    {
-                        PlayerTurn(next);
-                    }
+                    tracker.Enqueue(MessageModel.PlayerTurn); // signify that game is waiting for player's input
                 } else
                 {
-                    OpponentTurn();
+                    TakeTurn(Player, Opponent, Actor.Player, Player.NextAction(), tracker);
                 }
             }
-            return Messages.Dequeue();
+            else
+            {
+                if (!Opponent.HasActions)
+                {
+                    Move move = Opponent.Moves[rng.Next(0, Opponent.Moves.Length)];
+                    move.Action(Opponent); // simulate input from Opponent
+                }
+                TakeTurn(Opponent, Player, Actor.Opponent, Opponent.NextAction(), tracker);
+            }
         }
 
-        public void PlayerTurn()
+        private void TakeTurn(Character actor, Character target, Actor identifier, Move move, Queue<MessageModel> tracker)
         {
-
-        }
-        public void PlayerTurn(Move move) => TakeTurn(Actor.Player, move);
-
-        private void OpponentTurn() => TakeTurn(Actor.Opponent, GetRandom(ref Opponent.Moves));
-
-        public void TakeTurn(Actor upNext, Move move)
-        {
-            Character actor = upNext == Actor.Player ? Player : Opponent;
-            Character target = upNext == Actor.Player ? Opponent : Player;
-
-            actor.UpdateStatuses();
-            move.Action(actor, target);
-
-            Move actorAction = actor.NextAction();
-            if (actorAction != Move.None)
+            if (move == Move.None)
+            {
+                tracker.Enqueue(new(actor.Name + " does nothing.", identifier, Move.None));
+            } else
             {
                 int attack = actor.AttackWith(move);
                 int damage = target.TakeAttack(attack);
 
-                Messages.Enqueue(new(actor.Name + " " + move.Messages[0], upNext, move));
-                Messages.Enqueue(new(target.Name + " takes " + damage + " damage!", upNext, move));
+                tracker.Enqueue(new(actor.Name + " " + move.Messages[0], identifier, move));
+                tracker.Enqueue(new(target.Name + " takes " + damage + " damage!", identifier, move));
                 if (target.Health <= 0)
                 {
-                    Messages.Enqueue(new(target.Name + " has been defeated. " + actor.Name + " wins!", upNext, move));
-                    Messages.Enqueue(MessageModel.GameOver);
+                    tracker.Enqueue(new(target.Name + " has been defeated. " + actor.Name + " wins!", identifier, move));
+                    tracker.Enqueue(MessageModel.GameOver);
                 }
-            } else
-            {
-                Messages.Enqueue(new(actor.Name + " does nothing.", upNext, Move.None));
             }
-
-            Turns.Enqueue(Turns.Dequeue());
+            Turns.Enqueue(Turns.Dequeue()); // front goes to back
         }
     }
 }
