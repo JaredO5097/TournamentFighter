@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TournamentFighter.Data;
 using Random = System.Random;
 
@@ -93,11 +94,10 @@ namespace TournamentFighter.Models
 
         public Move[] Moves = [Move.None];
 
-        private readonly Queue<Status> StatusEffects = new Queue<Status>();
         private readonly Queue<Move> Actions = new Queue<Move>();
 
         // Health + Agility + Defense + Strength + Accuracy + Evasion = 400
-        [Range(0, SkillCap)] public int Health { get; set; }
+        [Range(-100, SkillCap)] public int Health { get; set; }
         [Range(1, SkillCap)]  public int Agility { get; set; }
         [Range(1, SkillCap)] public int Defense { get; set; }
         [Range(1, SkillCap)] public int Strength { get; set; }
@@ -131,24 +131,21 @@ namespace TournamentFighter.Models
             return 0;
         }
 
+        public void QueueRandomMove()
+        {
+            Move move = Moves[_rng.Next(0, Moves.Length)];
+            QueueMove(move);
+        }
+
         public void QueueMove(Move move)
         {
+            for (int i = 0; i < move.TurnDelay; i++)
+            {
+                Actions.Enqueue(Move.None);
+            }
             Actions.Enqueue(move);
         }
         public bool HasActions => Actions.Count > 0;
-        public Move CheckNextAction() => Actions.TryPeek(out Move res) ? res : Move.None;
         public Move NextAction() => Actions.TryDequeue(out Move res) ? res : Move.None;
-
-        public void UpdateStatuses()
-        {
-            if (StatusEffects.Count > 0)
-            {
-                Status status = StatusEffects.Dequeue();
-                if (status.Name == StatusName.TurnDelay)
-                {
-                    
-                }
-            }
-        }
     }
 }

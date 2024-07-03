@@ -5,78 +5,76 @@
 <PageTitle>Battle!</PageTitle>
 
 <div id="battle-div" class="row-center">
-    @if (gameOver)
-    {
-        <div class="col w-60">
-            <article class="dialogue d-plain">
-                <p>Game over!</p>
-            </article>
-            <button class="btn-gold btn-large" @onclick="NewGame">New Game</button>
-        </div>
-    } else
-    {
-        <div class="col w-20">
-            <button class="btn-gold btn-small" @onclick="@(() => showingOpponentStats = !showingOpponentStats)">Opponent Stats</button>
-            @if (showingOpponentStats)
-            {
-                <article class="stats s-opponent">
-                    <h1>@Opponent.Name</h1>
-                    <p>The @Opponent.Tagline</p>
-                    <h2>Health ♥</h2>
-                    <p>@Opponent.Health</p>
-                    <h2>Moves</h2>
-                    @if (OpponentRevealedMoves.Count == 0)
+    <div class="col w-20">
+        <button class="btn-gold btn-small" @onclick="@(() => showingOpponentStats = !showingOpponentStats)">Opponent Stats</button>
+        @if (showingOpponentStats)
+        {
+            <article class="stats s-opponent">
+                <h1>@Opponent.Name</h1>
+                <p>The @Opponent.Tagline</p>
+                <h2>Health ♥</h2>
+                <p>@Opponent.Health</p>
+                <h2>Moves</h2>
+                @if (OpponentRevealedMoves.Count == 0)
+                {
+                    <p>???</p>
+                }
+                else
+                {
+                    @foreach (Move move in OpponentRevealedMoves.Keys)
                     {
-                        <p>???</p>
-                    }
-                    else
-                    {
-                        @foreach (Move move in OpponentRevealedMoves.Keys)
+                        if (move != Move.None)
                         {
                             <p>@move.Name</p>
                         }
                     }
-                </article>
-            }
-        </div>
-        <div class="col w-60">
-            @if (!CurrentMsg.Equals(MessageModel.Default))
-            {
-                <article class="@(CurrentMsg.Source == Actor.Opponent ? "dialogue d-opponent" : "dialogue d-plain")">
-                    <p>@CurrentMsg.Message</p>
-                    @if (awaitingInput)
+                }
+            </article>
+        }
+    </div>
+    <div class="col w-60">
+        @if (CurrentMsg != MessageModel.Empty)
+        {
+            <article class="@(CurrentMsg.Type == MessageType.OpponentTurn ? "dialogue d-opponent" : "dialogue d-plain")">
+                <p>@CurrentMsg.Message</p>
+                @if (CurrentMsg.Type == MessageType.PlayerInput)
+                {
+                    foreach (Move move in Player.Moves)
                     {
-                        foreach (Move move in Player.Moves)
-                        {
-                            <button class="btn-gold btn-small" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
-                        }
+                        <button class="btn-gold btn-small" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
                     }
-                </article>
+                }
+            </article>
+            if (CurrentMsg.Type == MessageType.GameOver)
+            {
+                readyForNext = false;
+                <button class="btn-gold btn-large" @onclick="NewGame">New Game</button>
             }
-            @if (readyForNext)
+            else if (readyForNext)
             {
                 <button class="btn-gold btn-large" @onclick="ProgressGame">Next</button>
             }
-        </div>
-        <div class="col w-20">
-            <button class="btn-gold btn-small" @onclick="@(() => showingPlayerStats = !showingPlayerStats)">Your Stats</button>
-            @if (showingPlayerStats)
-            {
-                <article class="stats s-plain">
-                    <h1>@Player.Name</h1>
-                    <p>The @Player.Tagline</p>
-                    <h2>Health ♥</h2>
-                    <p>@Player.Health</p>
-                    <h2>Stats</h2>
-                    <p>Agility: &nbsp @Player.Agility</p>
-                    <p>Defense: &nbsp @Player.Defense</p>
-                    <p>Strength: &nbsp @Player.Strength</p>
-                    <p>Accuracy: &nbsp @Player.Accuracy</p>
-                    <p>Evasion: &nbsp @Player.Evasion</p>
-                </article>
-            }
-        </div>
-    }
+        }
+
+    </div>
+    <div class="col w-20">
+        <button class="btn-gold btn-small" @onclick="@(() => showingPlayerStats = !showingPlayerStats)">Your Stats</button>
+        @if (showingPlayerStats)
+        {
+            <article class="stats s-plain">
+                <h1>@Player.Name</h1>
+                <p>The @Player.Tagline</p>
+                <h2>Health ♥</h2>
+                <p>@Player.Health</p>
+                <h2>Stats</h2>
+                <p>Agility: &nbsp @Player.Agility</p>
+                <p>Defense: &nbsp @Player.Defense</p>
+                <p>Strength: &nbsp @Player.Strength</p>
+                <p>Accuracy: &nbsp @Player.Accuracy</p>
+                <p>Evasion: &nbsp @Player.Evasion</p>
+            </article>
+        }
+    </div>
 </div>
 
 @code {
@@ -84,14 +82,10 @@
     private Character Opponent = CharacterList.Default;
 
     private Queue<MessageModel> MessageTracker = new Queue<MessageModel>();
+    private MessageModel CurrentMsg = MessageModel.Empty;
 
-    private MessageModel CurrentMsg = MessageModel.Default;
-
-    private bool awaitingInput = false;
     private bool readyForNext = true;
-    private bool gameOver = false;
 
-    private Move playerSelectedMove = Move.None;
     private Dictionary<Move, bool> OpponentRevealedMoves = new Dictionary<Move, bool>();
 
     private bool showingPlayerStats = true;
@@ -102,48 +96,36 @@
         Player = Game.Player;
         Opponent = Game.Opponent;
         MessageTracker.Clear();
-        Game.Start(MessageTracker);
+        MessageTracker.Enqueue(new(MessageType.Game, "Let's begin!\n" +
+                "You enter the sandy arena. You see a clear blue sky above, and feel warm sunlight on your skin.\n" +
+                "Opposite you stands " + Opponent.Description, Move.None));
+        MessageTracker.Enqueue(new(MessageType.Game, Opponent.OpeningDialogue, Move.None));
         ProgressGame();
     }
 
     private void ProgressGame()
     {
-        if (!gameOver)
+        if (MessageTracker.Count == 0)
         {
-            if (playerSelectedMove != Move.None)
-            {
-                Game.RecordPlayerMove(playerSelectedMove);
-                playerSelectedMove = Move.None;
-                awaitingInput = false;
-            }
-
             Game.NextTurn(MessageTracker);
+        }
 
-            CurrentMsg = MessageTracker.Dequeue();
-            if (CurrentMsg == MessageModel.GameOver)
-            {
-                gameOver = true;
-            } else if (CurrentMsg.Source == Actor.Opponent)
-            {
-                if (CurrentMsg.Move != Move.None)
-                {
-                    OpponentRevealedMoves[CurrentMsg.Move] = true;
-                }
-            } else if (CurrentMsg == MessageModel.PlayerTurn)
-            {
-                awaitingInput = true;
-                readyForNext = false;
-            }
-        }       
+        CurrentMsg = MessageTracker.Dequeue();
+        if (CurrentMsg.Type == MessageType.OpponentTurn)
+        {
+            OpponentRevealedMoves[CurrentMsg.Move] = true;
+            // bool doesn't matter, just using a dictionary to avoid checking for duplicates. Aka LAZY
+        }
+        else if (CurrentMsg.Type == MessageType.PlayerInput)
+        {
+            readyForNext = false;
+        }
     }
 
     private void RecordMove(Move move)
     {
-        if (!gameOver)
-        {
-            playerSelectedMove = move;
-            readyForNext = true;
-        }
+        Game.RecordPlayerMove(move);
+        readyForNext = true;
     }
 
     private void NewGame()
