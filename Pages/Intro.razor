@@ -102,22 +102,19 @@
 
     public void SetBalancedBuild()
     {
-        Player.Health = 70; Player.Agility = 70; Player.Defense = 60;
-        Player.Strength = 70; Player.Accuracy = 70; Player.Evasion = 60;
+        Player.SetStats(70, 70, 60, 70, 70, 60);
         choseBuild = true;
     }
 
     public void SetAgileBuild()
     {
-        Player.Health = 60; Player.Agility = 90; Player.Defense = 50;
-        Player.Strength = 50; Player.Accuracy = 70; Player.Evasion = 80;
+        Player.SetStats(60, 90, 50, 50, 70, 80);
         choseBuild = true;
     }
 
     public void SetTankyBuild()
     {
-        Player.Health = 100; Player.Agility = 40; Player.Defense = 90;
-        Player.Strength = 100; Player.Accuracy = 40; Player.Evasion = 30;
+        Player.SetStats(100, 40, 90, 100, 40, 30);
         choseBuild = true;
     }
 

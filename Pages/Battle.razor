@@ -14,6 +14,8 @@
                 <p>The @Opponent.Tagline</p>
                 <h2>Health ♥</h2>
                 <p>@Opponent.Health</p>
+                <h2>Status Effects</h2>
+                <p>@Opponent.CurrentStatus.ToString()</p>
                 <h2>Moves</h2>
                 @if (OpponentRevealedMoves.Count == 0)
                 {
@@ -66,6 +68,8 @@
                 <p>The @Player.Tagline</p>
                 <h2>Health ♥</h2>
                 <p>@Player.Health</p>
+                <h2>Status Effects</h2>
+                <p>@Player.CurrentStatus.ToString()</p>
                 <h2>Stats</h2>
                 <p>Agility: &nbsp @Player.Agility</p>
                 <p>Defense: &nbsp @Player.Defense</p>

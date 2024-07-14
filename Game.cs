@@ -13,6 +13,15 @@ namespace TournamentFighter
         GameOver
     }
 
+    public enum Status
+    {
+        None,
+        Bleed,
+        Burn,
+        Frostbite,
+        Immobile,
+    }
+
     public readonly record struct MessageModel(MessageType Type, string Message, Move Move)
     {
         public static readonly MessageModel Empty = new(MessageType.Empty, "", Move.None);
@@ -35,6 +44,7 @@ namespace TournamentFighter
             Player.Moves = [Move.Punch, Move.SwordSlash, Move.JumpKick, Move.Counter];
             Character[] characters = CharacterList.ToArray();
             Opponent = characters[rng.Next(0, characters.Length)];
+            Opponent = CharacterList.Grizwald;
 
             Turns.Clear();
             bool playerFaster = Player.Agility == Opponent.Agility ? rng.Next(0, 2) > 0 : Player.Agility > Opponent.Agility;
@@ -87,8 +97,10 @@ namespace TournamentFighter
                 tracker.Enqueue(new(type, actor.Name + " does nothing.", Move.None));
             } else
             {
+                actor.UpdateStatus();
+
                 int attack = actor.AttackWith(move);
-                int damage = target.TakeAttack(attack);
+                int damage = target.TakeAttack(attack, move);
 
                 tracker.Enqueue(new(type, actor.Name + " " + move.Messages[0], move));
                 tracker.Enqueue(new(type, target.Name + " takes " + damage + " damage!", move));
