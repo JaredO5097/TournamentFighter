@@ -35,12 +35,18 @@ namespace TournamentFighter
 
         private Move PlayerInput = Move.None;
 
+        private Character playerInitial = CharacterList.Default;
         public Character Player { get; private set; } = CharacterList.Default;
         public Character Opponent { get; private set; } = CharacterList.Default;
 
+        public void SetUpWithExistingPlayer()
+        {
+            SetUp(playerInitial);
+        }
+
         public void SetUp(Character playerModel)
         {
-            Player = playerModel;
+            Player = playerInitial = playerModel;
             Player.Moves = [Move.Punch, Move.SwordSlash, Move.JumpKick, Move.Counter];
             Character[] characters = CharacterList.ToArray();
             Opponent = characters[rng.Next(0, characters.Length)];
@@ -94,7 +100,7 @@ namespace TournamentFighter
         {
             if (move == Move.None)
             {
-                tracker.Enqueue(new(type, actor.Name + " does nothing.", Move.None));
+                tracker.Enqueue(new(type, actor.Name + " does nothing. Interesting...", Move.None));
             } else
             {
                 actor.UpdateStatus();
@@ -106,6 +112,7 @@ namespace TournamentFighter
                 tracker.Enqueue(new(type, target.Name + " takes " + damage + " damage!", move));
                 if (target.Health <= 0)
                 {
+                    if (target.DefeatDialogue != null) { tracker.Enqueue(new(type, target.DefeatDialogue, Move.None)); }
                     tracker.Enqueue(new(MessageType.GameOver, target.Name + " has been defeated. " + actor.Name + " wins!", move));
                 }
             }

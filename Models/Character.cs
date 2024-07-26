@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using TournamentFighter.Data;
+﻿using System.ComponentModel.DataAnnotations;
 using Random = System.Random;
 
 namespace TournamentFighter.Models
@@ -13,8 +11,11 @@ namespace TournamentFighter.Models
             Tagline = "Perfect Specimen",
             OpeningDialogue = @"Hello. I don't know why I'm here, but it means something went wrong.
                                 Well no matter. If you were looking for a good challenge, you've found it!",
-            Description = @"a man with a grey body and no hair. He has a slight smile on his face, 
-                            and looks extremely confident. You can tell this will be a tough fight.",
+            Description = @"I don't believe it but there's a fully grey man in the arena ladies and gentlemen!
+                            It doesn't look like he has any hair on him too... but he seems so confident. 
+                            I can't wait to see what happens!",
+            VictoryDialogue = @"Do not despair over your loss. A mortal cannot expect to beat a god.",
+            DefeatDialogue = @"What... are you...?",
             Health = 100,
             Moves = [Move.LongShot, Move.Punch, Move.SwordSlash, Move.AxeSwing,
                 Move.JumpKick, Move.ShortShot, Move.Counter],
@@ -31,8 +32,10 @@ namespace TournamentFighter.Models
             OpeningDialogue = @"You there, you must be my opponent. My name is Ryalt. I’m a proud warrior from my country.
                                 I’ve never lost a fight, and I certainly won’t be breaking my winning streak today.
                                 Now come on, I have no more words for you. Prepare yourself!",
-            Description = @"an average-height man. He looks slim but strong, and is wearing a long-sleeve shirt and pants, 
-                            but no armor. He is holding a bow in one hand, and has a quiver on his waist.",
+            Description = @"This guy looks fast. He's not wearing any armor too, just long sleeves and pants. 
+                            And is that a bow? Looks like we have an archer ladies and gentlemen!",
+            VictoryDialogue = @"My arrows always point me to victory!",
+            DefeatDialogue = @"Gah, I wasn't focused enough to beat you...",
             Health = 100,
             Moves = [Move.LongShot, Move.ShortShot, Move.Punch],
             Agility = 90,
@@ -48,8 +51,11 @@ namespace TournamentFighter.Models
             OpeningDialogue = @"Hoo so you're my prey, sorry you ran into me so early in the tournament.
                                 My axe will cut you so deep that you'll be in the hospital for weeks.
                                 Now bring it, let's see if you can give me a good challenge!",
-            Description = @"a tall man with beefy muscles. He has a large axe across his back, and has no armor except for
-                            a breast plate. He is wearing a tank top and cargo pants, and his tanned, bald head is reflecting the sun.",
+            Description = @"WHOA now those are some muscles! This may be our tallest competitor today- he makes that axe on his back
+                            look small! And no armor except for a breast plate? I think we're gonna see some real power from this tall
+                            bald guy ladies and gentlemen!",
+            VictoryDialogue = @"HA HA HA, NOW THAT WAS A GOOD FIGHT!",
+            DefeatDialogue = @"OH now that's a surprise, you've earned my respect as a fighter!",
             Health = 100,
             Moves = [Move.AxeSwing, Move.Counter, Move.RoaringMoon],
             Agility = 60,
@@ -62,11 +68,14 @@ namespace TournamentFighter.Models
         {
             Name = "Hina",
             Tagline = "Fiery Martial Artist",
-            OpeningDialogue = @"Greetings, my name is Hina. My weapon of choice is my own body.
+            OpeningDialogue = @"My name is Hina. My weapon of choice is my own body.
                                 I respect the strong, and so far no one here has been worthy of my respect.
                                 So, I ask you to come at me with all you have- I'm starting to get bored.",
-            Description = @"an average-height girl wearing a t-shirt and short shorts. Her hair is pulled back, and she has
-                            defined muscles all across her body. Her hands are covered with multiple layers of a cotton wrap",
+            Description = @"This girl looks fierce, I think she'd kill me if I just looked at her the wrong way!
+                            It looks like her hands are covered in some kind of wrap too, looks like she's going to deliver some
+                            pain with her fists!",
+            VictoryDialogue = @"Pathetic.",
+            DefeatDialogue = @"9 times out of 10 I would win. Don't get full of yourself.",
             Health = 100,
             Moves = [Move.Punch, Move.JumpKick, Move.Counter],
             Agility = 90,
@@ -83,8 +92,11 @@ namespace TournamentFighter.Models
             OpeningDialogue = @"Greetings! You may call me Professor Grizwald! During my adventures, I have come across many 
                                 mystical spells that seem to be from an unidentified civilization! I have been looking for a way to
                                 relieve some stress after all my traveling, and I figured, let's try out these spells! Best of luck!",
-            Description = @"a very proper old man, with a bowler hat and monocle. On his body he is wearing a blazer and khakis.
-                            He appears to be good-natured, and willing to get his hands dirty",
+            Description = @"Ladies and gentlemen what a surprise, it's Professor Grizwald! Looking as gentlemanly as ever.
+                            That blazer and those khakis look great on you professor. And what a great hat! The Professor likes to
+                            go explore ancient civilizations, I wonder if he found some kind of weapon!?",
+            VictoryDialogue = @"Great showing old chap. It appears these scrolls deal a great deal of damage!",
+            DefeatDialogue = @"It appears I have lost! Blast, I will return once I have amassed more powerful scrolls!",
             Health = 100,
             Moves = [Move.IceSpike, Move.FlameImplosion, Move.ThousandCuts, Move.CursedExcalibur],
             Agility = 70,
@@ -109,6 +121,8 @@ namespace TournamentFighter.Models
 
         public string? Description { get; set; }
         public string OpeningDialogue { get; set; } = "";
+        public string? VictoryDialogue { get; set; } = "";
+        public string? DefeatDialogue { get; set; } = "";
 
         public Move[] Moves = [Move.None];
 

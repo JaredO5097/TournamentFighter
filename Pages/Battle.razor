@@ -35,6 +35,10 @@
         }
     </div>
     <div class="col w-60">
+        @if (playingMoveAudio)
+        {
+            <audio id="moveSound" autoplay onended="@(() => { playingMoveAudio = false; })" src="@moveAudioSrc"></audio>
+        }
         @if (CurrentMsg != MessageModel.Empty)
         {
             <article class="@(CurrentMsg.Type == MessageType.OpponentTurn ? "dialogue d-opponent" : "dialogue d-plain")">
@@ -50,7 +54,8 @@
             if (CurrentMsg.Type == MessageType.GameOver)
             {
                 readyForNext = false;
-                <button class="btn-gold btn-large" @onclick="NewGame">New Game</button>
+                <button class="btn-gold btn-large" @onclick="CreateNewCharacter">Create New Character</button>
+                <button class="btn-gold btn-large" @onclick="TryAgain">Try Again</button>
             }
             else if (readyForNext)
             {
@@ -92,6 +97,25 @@
 
     private Dictionary<Move, bool> OpponentRevealedMoves = new Dictionary<Move, bool>();
 
+    private readonly Dictionary<Move, string> MoveSounds = new()
+    {
+        {Move.LongShot, ""},
+        {Move.Punch, ""},
+        {Move.SwordSlash, ""},
+        {Move.AxeSwing, ""},
+        {Move.RoaringMoon, ""},
+        {Move.JumpKick, ""},
+        {Move.ShortShot, "media/bow1.wav"},
+        {Move.Counter, ""},
+        {Move.IceSpike, ""},
+        {Move.FlameImplosion, ""},
+        {Move.ThousandCuts, ""},
+        {Move.CursedExcalibur, ""},
+    };
+
+    private bool playingMoveAudio = false;
+    private string moveAudioSrc = "";
+
     private bool showingPlayerStats = true;
     private bool showingOpponentStats = true;
 
@@ -100,10 +124,12 @@
         Player = Game.Player;
         Opponent = Game.Opponent;
         MessageTracker.Clear();
-        MessageTracker.Enqueue(new(MessageType.Game, "Let's begin!\n" +
-                "You enter the sandy arena. You see a clear blue sky above, and feel warm sunlight on your skin.\n" +
-                "Opposite you stands " + Opponent.Description, Move.None));
+        MessageTracker.Enqueue(new(MessageType.Game, "Welcome ladies and gentlemen, to the annual IRONMAN tournament!\n" +
+                "It's a bright sunny day here, and we've got some great fighters for you this year!\n" +
+                "Here comes our first one, " + Player.Name + "! They look like they're here to win!", Move.None));
+        MessageTracker.Enqueue(new(MessageType.Game, "And here's their opponent. " + Opponent.Description, Move.None));
         MessageTracker.Enqueue(new(MessageType.Game, Opponent.OpeningDialogue, Move.None));
+        readyForNext = true;
         ProgressGame();
     }
 
@@ -117,8 +143,10 @@
         CurrentMsg = MessageTracker.Dequeue();
         if (CurrentMsg.Type == MessageType.OpponentTurn)
         {
-            OpponentRevealedMoves[CurrentMsg.Move] = true;
-            // bool doesn't matter, just using a dictionary to avoid checking for duplicates. Aka LAZY
+            OpponentRevealedMoves[CurrentMsg.Move] = true; // just using a dictionary to avoid checking for duplicates
+
+            moveAudioSrc = MoveSounds[CurrentMsg.Move];
+            playingMoveAudio = true;
         }
         else if (CurrentMsg.Type == MessageType.PlayerInput)
         {
@@ -132,8 +160,14 @@
         readyForNext = true;
     }
 
-    private void NewGame()
+    private void CreateNewCharacter()
     {
         Navigation.NavigateTo("/intro");
+    }
+
+    private void TryAgain()
+    {
+        Game.SetUpWithExistingPlayer();
+        OnInitialized();
     }
 }
