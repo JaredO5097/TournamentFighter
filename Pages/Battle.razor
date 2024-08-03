@@ -5,36 +5,34 @@
 <PageTitle>Battle!</PageTitle>
 
 <div id="battle-div" class="row-center">
-    <div class="col w-20">
-        <button class="btn-gold btn-small" @onclick="@(() => showingOpponentStats = !showingOpponentStats)">Opponent Stats</button>
-        @if (showingOpponentStats)
+    <article class="col w-20 stats s-opponent">
+        <h1>@Opponent.Name</h1>
+        <p>The @Opponent.Tagline</p>
+        <h2>Health ♥</h2>
+        <p>@Opponent.Health</p>
+        <h2>Status Effects</h2>
+        <p>@Opponent.CurrentStatus.ToString()</p>
+        <h2>Moves</h2>
+        @if (OpponentRevealedMoves.Count == 0)
         {
-            <article class="stats s-opponent">
-                <h1>@Opponent.Name</h1>
-                <p>The @Opponent.Tagline</p>
-                <h2>Health ♥</h2>
-                <p>@Opponent.Health</p>
-                <h2>Status Effects</h2>
-                <p>@Opponent.CurrentStatus.ToString()</p>
-                <h2>Moves</h2>
-                @if (OpponentRevealedMoves.Count == 0)
-                {
-                    <p>???</p>
-                }
-                else
-                {
-                    @foreach (Move move in OpponentRevealedMoves.Keys)
-                    {
-                        if (move != Move.None)
-                        {
-                            <p>@move.Name</p>
-                        }
-                    }
-                }
-            </article>
+            <p>???</p>
         }
-    </div>
+        else
+        {
+            @foreach (Move move in OpponentRevealedMoves.Keys)
+            {
+                if (move != Move.None)
+                {
+                    <p>@move.Name</p>
+                }
+            }
+        }
+    </article>
     <div class="col w-60">
+        @if (playingBgm)
+        {
+            <audio id="bgm" autoplay src="@bgmAudioSrc"></audio>
+        }
         @if (playingMoveAudio)
         {
             <audio id="moveSound" autoplay onended="@(() => { playingMoveAudio = false; })" src="@moveAudioSrc"></audio>
@@ -64,31 +62,27 @@
         }
 
     </div>
-    <div class="col w-20">
-        <button class="btn-gold btn-small" @onclick="@(() => showingPlayerStats = !showingPlayerStats)">Your Stats</button>
-        @if (showingPlayerStats)
-        {
-            <article class="stats s-plain">
-                <h1>@Player.Name</h1>
-                <p>The @Player.Tagline</p>
-                <h2>Health ♥</h2>
-                <p>@Player.Health</p>
-                <h2>Status Effects</h2>
-                <p>@Player.CurrentStatus.ToString()</p>
-                <h2>Stats</h2>
-                <p>Agility: &nbsp @Player.Agility</p>
-                <p>Defense: &nbsp @Player.Defense</p>
-                <p>Strength: &nbsp @Player.Strength</p>
-                <p>Accuracy: &nbsp @Player.Accuracy</p>
-                <p>Evasion: &nbsp @Player.Evasion</p>
-            </article>
-        }
-    </div>
+    <article class="col w-20 stats s-plain">
+        <h1>@Player.Name</h1>
+        <p>The @Player.Tagline</p>
+        <h2>Health ♥</h2>
+        <p>@Player.Health</p>
+        <h2>Status Effects</h2>
+        <p>@Player.CurrentStatus.ToString()</p>
+        <h2>Stats</h2>
+        <p>Agility: &nbsp @Player.Agility</p>
+        <p>Defense: &nbsp @Player.Defense</p>
+        <p>Strength: &nbsp @Player.Strength</p>
+        <p>Accuracy: &nbsp @Player.Accuracy</p>
+        <p>Evasion: &nbsp @Player.Evasion</p>
+    </article>
 </div>
 
 @code {
     private Character Player = CharacterList.Default;
     private Character Opponent = CharacterList.Default;
+
+    private static readonly Random _rng = new();
 
     private Queue<MessageModel> MessageTracker = new Queue<MessageModel>();
     private MessageModel CurrentMsg = MessageModel.Empty;
@@ -96,6 +90,15 @@
     private bool readyForNext = true;
 
     private Dictionary<Move, bool> OpponentRevealedMoves = new Dictionary<Move, bool>();
+
+    private readonly List<string> Songs = new()
+    {
+        "media/bravelyDefaultBgm1.mp3",
+        "media/pokemonBgm1.mp3",
+        "media/pokemonBgm2.mp3",
+        "media/pokemonBgm3.mp3",
+        "media/pokemonBgm4.mp3",
+    };
 
     private readonly Dictionary<Move, string> MoveSounds = new()
     {
@@ -114,10 +117,9 @@
     };
 
     private bool playingMoveAudio = false;
+    private bool playingBgm = false;
     private string moveAudioSrc = "";
-
-    private bool showingPlayerStats = true;
-    private bool showingOpponentStats = true;
+    private string bgmAudioSrc = "";
 
     protected override void OnInitialized()
     {
@@ -130,6 +132,9 @@
         MessageTracker.Enqueue(new(MessageType.Game, "And here's their opponent. " + Opponent.Description, Move.None));
         MessageTracker.Enqueue(new(MessageType.Game, Opponent.OpeningDialogue, Move.None));
         readyForNext = true;
+
+        bgmAudioSrc = Songs[_rng.Next(0, Songs.Count)];
+        playingBgm = true;
         ProgressGame();
     }
 
@@ -145,7 +150,7 @@
         {
             OpponentRevealedMoves[CurrentMsg.Move] = true; // just using a dictionary to avoid checking for duplicates
 
-            moveAudioSrc = MoveSounds[CurrentMsg.Move];
+            moveAudioSrc = MoveSounds.ContainsKey(CurrentMsg.Move) ? MoveSounds[CurrentMsg.Move] : "";
             playingMoveAudio = true;
         }
         else if (CurrentMsg.Type == MessageType.PlayerInput)

@@ -29,9 +29,9 @@ namespace TournamentFighter.Models
         {
             Name = "Ryalt",
             Tagline = "Sly Archer",
-            OpeningDialogue = @"You there, you must be my opponent. My name is Ryalt. I’m a proud warrior from my country.
-                                I’ve never lost a fight, and I certainly won’t be breaking my winning streak today.
-                                Now come on, I have no more words for you. Prepare yourself!",
+            OpeningDialogue = @"You must be my opponent. My name is Ryalt, I’m a proud warrior from my country.
+                                I’ve never lost a fight and I certainly won’t be breaking my winning streak today.
+                                Now come on, prepare yourself!",
             Description = @"This guy looks fast. He's not wearing any armor too, just long sleeves and pants. 
                             And is that a bow? Looks like we have an archer ladies and gentlemen!",
             VictoryDialogue = @"My arrows always point me to victory!",
@@ -48,14 +48,12 @@ namespace TournamentFighter.Models
         {
             Name = "Dejourn",
             Tagline = "Burly Axe Wielder",
-            OpeningDialogue = @"Hoo so you're my prey, sorry you ran into me so early in the tournament.
-                                My axe will cut you so deep that you'll be in the hospital for weeks.
-                                Now bring it, let's see if you can give me a good challenge!",
-            Description = @"WHOA now those are some muscles! This may be our tallest competitor today- he makes that axe on his back
-                            look small! And no armor except for a breast plate? I think we're gonna see some real power from this tall
-                            bald guy ladies and gentlemen!",
-            VictoryDialogue = @"HA HA HA, NOW THAT WAS A GOOD FIGHT!",
-            DefeatDialogue = @"OH now that's a surprise, you've earned my respect as a fighter!",
+            OpeningDialogue = @"Hoo, sorry you have to face me. My axe will cut you so deep that you'll 
+                                be in the hospital for weeks. Now, let's see if you can give me a good challenge!!",
+            Description = @"WHOA now those are some muscles! He makes that axe on his back look small! 
+                            And no armor except for a breast plate? I think we're gonna see some real power from this guy!",
+            VictoryDialogue = @"HA HA HA NOW THAT WAS A GOOD FIGHT!",
+            DefeatDialogue = @"OHH now that's a surprise, you've earned my respect as a fighter!",
             Health = 100,
             Moves = [Move.AxeSwing, Move.Counter, Move.RoaringMoon],
             Agility = 60,
@@ -68,12 +66,10 @@ namespace TournamentFighter.Models
         {
             Name = "Hina",
             Tagline = "Fiery Martial Artist",
-            OpeningDialogue = @"My name is Hina. My weapon of choice is my own body.
-                                I respect the strong, and so far no one here has been worthy of my respect.
-                                So, I ask you to come at me with all you have- I'm starting to get bored.",
+            OpeningDialogue = @"My weapon of choice is my own body. No one here has been worthy of my respect,
+                                so I ask you to come at me with all you have- I'm bored.",
             Description = @"This girl looks fierce, I think she'd kill me if I just looked at her the wrong way!
-                            It looks like her hands are covered in some kind of wrap too, looks like she's going to deliver some
-                            pain with her fists!",
+                            It looks like her hands are wrapped too, she's going to deliver some pain with her fists!",
             VictoryDialogue = @"Pathetic.",
             DefeatDialogue = @"9 times out of 10 I would win. Don't get full of yourself.",
             Health = 100,
@@ -88,15 +84,15 @@ namespace TournamentFighter.Models
         public static Character Grizwald => new()
         {
             Name = "Grizwald",
-            Tagline = "Professor of the Mysterious",
-            OpeningDialogue = @"Greetings! You may call me Professor Grizwald! During my adventures, I have come across many 
-                                mystical spells that seem to be from an unidentified civilization! I have been looking for a way to
-                                relieve some stress after all my traveling, and I figured, let's try out these spells! Best of luck!",
-            Description = @"Ladies and gentlemen what a surprise, it's Professor Grizwald! Looking as gentlemanly as ever.
-                            That blazer and those khakis look great on you professor. And what a great hat! The Professor likes to
-                            go explore ancient civilizations, I wonder if he found some kind of weapon!?",
-            VictoryDialogue = @"Great showing old chap. It appears these scrolls deal a great deal of damage!",
-            DefeatDialogue = @"It appears I have lost! Blast, I will return once I have amassed more powerful scrolls!",
+            Tagline = "Mysterious Professor",
+            OpeningDialogue = @"Greetings! I'm Professor Grizwald! During my adventures, I have come across many
+                                mystical spells from an unidentified civilization! I have been searching for a way to
+                                relieve some stress, and I figured, let's try out these spells! Best of luck!",
+            Description = @"Ladies and gentlemen, it's Professor Grizwald! Looking as gentlemanly as ever.
+                            What a great hat Professor! The Professor likes to go explore ruins, 
+                            I wonder if he found some kind of weapon!?",
+            VictoryDialogue = @"Great showing old chap. It appears these scrolls deal a good deal of damage!",
+            DefeatDialogue = @"It appears I have lost! Blast, I will return once I have collected more scrolls!",
             Health = 100,
             Moves = [Move.IceSpike, Move.FlameImplosion, Move.ThousandCuts, Move.CursedExcalibur],
             Agility = 70,

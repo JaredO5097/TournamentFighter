@@ -7,9 +7,26 @@
             {
                 <NavLink id="nav-logo" href="">TOURNAMENT FIGHTER</NavLink>
             }
-            <NavLink href="">About</NavLink>
-            <NavLink href="">Help</NavLink>
-            <NavLink href="">Settings</NavLink>
+            <div class="col">
+                <button type="button" class="btn-gold btn-small" @onclick=ToggleMenu>MENU</button>
+                @if (menuActive)
+                {
+                    <div class="col absolute s-plain">
+                        <h3>Theme</h3>
+                        <div class="row-center">
+                            <button type="button" class="btn-gold btn-small">Arena (Default)</button>
+                            <button type="button" class="btn-gold btn-small">Pink</button>
+                            <button type="button" class="btn-gold btn-small">Aquatic</button>
+                            <button type="button" class="btn-gold btn-small">Astro</button>
+                        </div>
+                        <h3>About</h3>
+                        <p>
+                            Tournament Fighter is a fighting game. Defeat your opponents, and win the tournament!
+                        </p>
+                        <NavLink href="">RETURN TO HOME PAGE</NavLink>
+                    </div>
+                }
+            </div>
         </nav>
     </header>
     <main>
@@ -21,6 +38,7 @@
 
 @code {
     private bool logoActive = true;
+    private bool menuActive = false;
 
     public void ToggleLogo(bool active)
     {
@@ -31,5 +49,18 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            menuActive = false;
+        }
+    }
+
+    private void ToggleMenu()
+    {
+        menuActive = !menuActive;
     }
 }

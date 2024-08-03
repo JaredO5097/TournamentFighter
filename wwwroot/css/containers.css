@@ -4,6 +4,12 @@
     align-items: center;
 }
 
+.absolute {
+    position: absolute;
+    top: 60px;
+    right: 0;
+}
+
 .w-60 {
     width: 60%;
 }

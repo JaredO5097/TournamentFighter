@@ -48,9 +48,9 @@ namespace TournamentFighter
         {
             Player = playerInitial = playerModel;
             Player.Moves = [Move.Punch, Move.SwordSlash, Move.JumpKick, Move.Counter];
+
             Character[] characters = CharacterList.ToArray();
             Opponent = characters[rng.Next(0, characters.Length)];
-            Opponent = CharacterList.Grizwald;
 
             Turns.Clear();
             bool playerFaster = Player.Agility == Opponent.Agility ? rng.Next(0, 2) > 0 : Player.Agility > Opponent.Agility;
