@@ -148,6 +148,12 @@ namespace TournamentFighter.Models
             Evasion = Math.Clamp(evasion, 1, 100);
         }
 
+        public void ClearStatus()
+        {
+            CurrentStatus = Status.None;
+            TurnsUntilStatusExpire = 0;
+        }
+
         public void UpdateStatus()
         {
             if (CurrentStatus == Status.Bleed)

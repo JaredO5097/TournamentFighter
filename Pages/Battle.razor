@@ -1,30 +1,29 @@
 ﻿@page "/battle"
+@inherits MainLayout
 @inject Game Game
 @inject NavigationManager Navigation
 
 <PageTitle>Battle!</PageTitle>
 
-<div id="battle-div" class="row-center">
-    <article class="col w-20 stats s-opponent">
-        <h1>@Opponent.Name</h1>
-        <p>The @Opponent.Tagline</p>
-        <h2>Health ♥</h2>
-        <p>@Opponent.Health</p>
-        <h2>Status Effects</h2>
-        <p>@Opponent.CurrentStatus.ToString()</p>
-        <h2>Moves</h2>
-        @if (OpponentRevealedMoves.Count == 0)
+<div id="battle-div" class="col">
+    <article class="row-start stats s-plain">
+        <p>@Player.Name the @Player.Tagline @Player.Health ♥</p>
+        <p>Status: @Player.CurrentStatus.ToString()</p>
+        <p>Agility: @Player.Agility</p>
+        <p>Defense: @Player.Defense</p>
+        <p>Strength: @Player.Strength</p>
+        <p>Accuracy: @Player.Accuracy</p>
+        <p>Evasion: @Player.Evasion</p>
+    </article>
+    <article class="row-start stats s-opponent">
+        <p>@Opponent.Name the @Opponent.Tagline @Opponent.Health ♥</p>
+        <p>Status: @Opponent.CurrentStatus.ToString()</p>
+        <p>Moves: </p>
+        @foreach (Move move in OpponentRevealedMoves.Keys)
         {
-            <p>???</p>
-        }
-        else
-        {
-            @foreach (Move move in OpponentRevealedMoves.Keys)
+            if (move != Move.None)
             {
-                if (move != Move.None)
-                {
-                    <p>@move.Name</p>
-                }
+                <p>@move.Name</p>
             }
         }
     </article>
@@ -62,20 +61,6 @@
         }
 
     </div>
-    <article class="col w-20 stats s-plain">
-        <h1>@Player.Name</h1>
-        <p>The @Player.Tagline</p>
-        <h2>Health ♥</h2>
-        <p>@Player.Health</p>
-        <h2>Status Effects</h2>
-        <p>@Player.CurrentStatus.ToString()</p>
-        <h2>Stats</h2>
-        <p>Agility: &nbsp @Player.Agility</p>
-        <p>Defense: &nbsp @Player.Defense</p>
-        <p>Strength: &nbsp @Player.Strength</p>
-        <p>Accuracy: &nbsp @Player.Accuracy</p>
-        <p>Evasion: &nbsp @Player.Evasion</p>
-    </article>
 </div>
 
 @code {
@@ -93,11 +78,9 @@
 
     private readonly List<string> Songs = new()
     {
-        "media/bravelyDefaultBgm1.mp3",
-        "media/pokemonBgm1.mp3",
-        "media/pokemonBgm2.mp3",
-        "media/pokemonBgm3.mp3",
-        "media/pokemonBgm4.mp3",
+        "media/music1.wav",
+        "media/music2.flac",
+        "media/music3.wav",
     };
 
     private readonly Dictionary<Move, string> MoveSounds = new()
@@ -121,16 +104,20 @@
     private string moveAudioSrc = "";
     private string bgmAudioSrc = "";
 
+    [CascadingParameter] public MainLayout Layout { get; set; }
+
     protected override void OnInitialized()
     {
+        Layout.DisableMenu();
         Player = Game.Player;
         Opponent = Game.Opponent;
+
         MessageTracker.Clear();
         MessageTracker.Enqueue(new(MessageType.Game, "Welcome ladies and gentlemen, to the annual IRONMAN tournament!\n" +
                 "It's a bright sunny day here, and we've got some great fighters for you this year!\n" +
                 "Here comes our first one, " + Player.Name + "! They look like they're here to win!", Move.None));
         MessageTracker.Enqueue(new(MessageType.Game, "And here's their opponent. " + Opponent.Description, Move.None));
-        MessageTracker.Enqueue(new(MessageType.Game, Opponent.OpeningDialogue, Move.None));
+        //MessageTracker.Enqueue(new(MessageType.Game, Opponent.OpeningDialogue, Move.None));
         readyForNext = true;
 
         bgmAudioSrc = Songs[_rng.Next(0, Songs.Count)];
@@ -173,6 +160,6 @@
     private void TryAgain()
     {
         Game.SetUpWithExistingPlayer();
-        OnInitialized();
+        Navigation.Refresh();
     }
 }

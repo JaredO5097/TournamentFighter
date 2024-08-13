@@ -22,6 +22,8 @@ namespace TournamentFighter
         Immobile,
     }
 
+    public readonly record struct CharacterMutableStats(int Health);
+
     public readonly record struct MessageModel(MessageType Type, string Message, Move Move)
     {
         public static readonly MessageModel Empty = new(MessageType.Empty, "", Move.None);
@@ -35,18 +37,21 @@ namespace TournamentFighter
 
         private Move PlayerInput = Move.None;
 
-        private Character playerInitial = CharacterList.Default;
+        private CharacterMutableStats playerInit;
         public Character Player { get; private set; } = CharacterList.Default;
         public Character Opponent { get; private set; } = CharacterList.Default;
 
         public void SetUpWithExistingPlayer()
         {
-            SetUp(playerInitial);
+            Player.Health = playerInit.Health;
+            Player.ClearStatus();
+            SetUp(Player);
         }
 
         public void SetUp(Character playerModel)
         {
-            Player = playerInitial = playerModel;
+            playerInit = new CharacterMutableStats(playerModel.Health);
+            Player = playerModel;
             Player.Moves = [Move.Punch, Move.SwordSlash, Move.JumpKick, Move.Counter];
 
             Character[] characters = CharacterList.ToArray();

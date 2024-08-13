@@ -44,6 +44,10 @@ body {
     transform: translateY(4px);
 }
 
+.btn-xsmall {
+    font-size: 0.7em;
+}
+
 .btn-small {
     font-size: 1em;
 }
@@ -61,14 +65,14 @@ body {
 }
 
 .stats {
-    padding: 15px 55px 15px 55px;
-    margin: 15px;
+    padding-right: 30%;
     font-size: 1.25em;
-    line-height: 12px;
+    width: 100%;
 }
 
 .stats > * {
     font-family: 'Segoe UI';
+    margin: 0px auto 0px 0px;
 }
 
 .s-opponent {
