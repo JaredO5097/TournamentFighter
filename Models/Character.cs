@@ -154,55 +154,71 @@ namespace TournamentFighter.Models
             TurnsUntilStatusExpire = 0;
         }
 
-        public void UpdateStatus()
+        public void UpdateStatus(MsgTracker tracker)
         {
             if (CurrentStatus == Status.Bleed)
             {
                 Health -= 10;
+                tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some blood...", Move.None));
             }
             TurnsUntilStatusExpire--;
             if (TurnsUntilStatusExpire == 0)
             {
-                if (CurrentStatus == Status.Burn)
+                if (CurrentStatus == Status.Bleed)
+                {
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " stopped bleeding!", Move.None));
+                } else if (CurrentStatus == Status.Burn)
                 {
                     Strength += 15;
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " got their strength back!", Move.None));
                 } else if (CurrentStatus == Status.Frostbite)
                 {
                     Evasion += 15;
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " can move their body again!", Move.None));
                 } else if (CurrentStatus == Status.Immobile)
                 {
                     Agility += 15;
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " is moving faster!", Move.None));
                 }
                 CurrentStatus = Status.None;
             }
         }
 
-        private void AddStatus(Status status)
+        public void AddStatus(Status status, MsgTracker tracker)
         {
-            CurrentStatus = status;
-            TurnsUntilStatusExpire = 2;
-
-            if (status == Status.Burn)
+            if (CurrentStatus != status)
             {
-                Strength -= 15;
-            } else if (status == Status.Frostbite)
-            {
-                Evasion -= 15;
-            } else if (status == Status.Immobile)
-            {
-                Agility -= 15;
+                CurrentStatus = status;
+                if (status == Status.Bleed)
+                {
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " started to bleed...", Move.None));
+                }
+                else if (status == Status.Burn)
+                {
+                    Strength -= 15;
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some strength...", Move.None));
+                }
+                else if (status == Status.Frostbite)
+                {
+                    Evasion -= 15;
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + "'s body is tense...", Move.None));
+                }
+                else if (status == Status.Immobile)
+                {
+                    Agility -= 15;
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " is moving slower...", Move.None));
+                }
             }
+            TurnsUntilStatusExpire = 2;  
         }
 
-        public int TakeAttack(int incomingDamage, Move move)
+        public int TakeAttack(int incomingDamage, Move move, MsgTracker tracker)
         {
             int actualDamage = 0;
             if (_rng.Next(1, SkillCap + 1) > (int)Math.Ceiling(0.15f * Evasion)) // did not evade
             {
                 actualDamage = incomingDamage - (int)(0.75f * Defense);
                 if (actualDamage < 0) { actualDamage = 0; }
-                else if (move.Status != Status.None)
-                { AddStatus(move.Status); }
             }
             Health -= actualDamage;
             return actualDamage;

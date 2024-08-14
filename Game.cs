@@ -29,6 +29,8 @@ namespace TournamentFighter
         public static readonly MessageModel Empty = new(MessageType.Empty, "", Move.None);
     }
 
+    public class MsgTracker : Queue<MessageModel> { }
+
     public class Game
     {
         private readonly Queue<MessageType> Turns = new Queue<MessageType>();
@@ -72,7 +74,7 @@ namespace TournamentFighter
 
         public void RecordPlayerMove(Move move) => PlayerInput = move;
 
-        public void NextTurn(Queue<MessageModel> tracker) 
+        public void NextTurn(MsgTracker tracker) 
         {
             if (Turns.Peek() == MessageType.PlayerTurn)
             {
@@ -84,7 +86,7 @@ namespace TournamentFighter
 
                 if (!Player.HasActions)
                 {
-                    tracker.Enqueue(new(MessageType.PlayerInput, "What will you do?", Move.None)); 
+                    tracker.Enqueue(new(MessageType.PlayerInput, "What will " + Player.Name + " do next??", Move.None)); 
                     // signify that game is waiting for player's input
                 } else
                 {
@@ -101,24 +103,45 @@ namespace TournamentFighter
             }
         }
 
-        private void TakeTurn(Character actor, Character target, MessageType type, Move move, Queue<MessageModel> tracker)
+        private string GetDmgMsg(int damage)
+        {
+            return damage switch
+            {
+                > 60 => "took a lethal blow!",
+                > 40 => "must've felt that!",
+                > 20 => "took some damage there!",
+                > 10 => "might've felt that!",
+                0 => "wasn't touched!",
+                _ => "took a hit!"
+            };
+        }
+
+        private void TakeTurn(Character actor, Character target, MessageType type, Move move, MsgTracker tracker)
         {
             if (move == Move.None)
             {
-                tracker.Enqueue(new(type, actor.Name + " does nothing. Interesting...", Move.None));
+                tracker.Enqueue(new(type, actor.Name + " isn't doing anything? Interesting...", Move.None));
             } else
             {
-                actor.UpdateStatus();
+                actor.UpdateStatus(tracker);
 
                 int attack = actor.AttackWith(move);
-                int damage = target.TakeAttack(attack, move);
-
+                int damage = target.TakeAttack(attack, move, tracker);
                 tracker.Enqueue(new(type, actor.Name + " " + move.Messages[0], move));
-                tracker.Enqueue(new(type, target.Name + " takes " + damage + " damage!", move));
+
                 if (target.Health <= 0)
                 {
+                    tracker.Enqueue(new(type, "WHOA, " + target.Name + " is on the ground! Looks like they have something to say", move));
                     if (target.DefeatDialogue != null) { tracker.Enqueue(new(type, target.DefeatDialogue, Move.None)); }
-                    tracker.Enqueue(new(MessageType.GameOver, target.Name + " has been defeated. " + actor.Name + " wins!", move));
+                    tracker.Enqueue(new(MessageType.GameOver, actor.Name + " wins! That's the end of this match, wow that was exciting!", Move.None));
+                } else
+                {
+                    
+                    tracker.Enqueue(new(type, target.Name + " " + GetDmgMsg(damage), move));
+                    if (damage > 0 && move.Status != Status.None)
+                    {
+                        target.AddStatus(move.Status, tracker);
+                    }
                 }
             }
             Turns.Enqueue(Turns.Dequeue()); // front goes to back
