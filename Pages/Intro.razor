@@ -1,4 +1,4 @@
-﻿@page "/intro"
+﻿@page "/"
 @inherits MainLayout
 @inject Game Game
 @inject NavigationManager Navigation
@@ -6,59 +6,74 @@
 <PageTitle>Character Creator</PageTitle>
 
 <div id="main-div" class="col">
-    <EditForm EditContext=@editContext Model=@Player OnValidSubmit=@Submit>
-        <DataAnnotationsValidator></DataAnnotationsValidator>
-        <article class="dialogue d-plain col">
-            <div class="row">
-                <p>Your name is &nbsp;</p>
-                <div class="col text-input">
-                    <!--<ValidationMessage For="() => Player.Name"></ValidationMessage>-->
-                    <InputText tabindex="1" placeholder="type here..."
-                               @bind-Value=@Player.Name @ref="nameInput"></InputText>
-                </div>
-            </div>
-
-            @{
-                enteredName = enteredTagline = !String.IsNullOrWhiteSpace(Player.Name); 
-            }
-
-            @if (enteredName)
-            {
-                <p>&nbsp;and you've entered a fighting tournament.</p>
+    @if (enabledMusic)
+    {
+        <!--<audio id="menu" autoplay src="@menuMusicSrc"></audio>-->
+    }
+    
+    @if (pressedStart)
+    {
+        <EditForm EditContext=@editContext Model=@Player OnValidSubmit=@Submit>
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+            <article class="dialogue d-plain col">
                 <div class="row">
-                    <p>You want people to call you the &nbsp</p>
+                    <p>Your name is &nbsp;</p>
                     <div class="col text-input">
-                        <!--<ValidationMessage For="() => Player.Tagline"></ValidationMessage>-->
-                        <InputText tabindex="2" placeholder="type here..."
-                                   @bind-Value=@Player.Tagline @ref="taglineInput"></InputText>
+                        <!--<ValidationMessage For="() => Player.Name"></ValidationMessage>-->
+                        <InputText tabindex="1" placeholder="type here..."
+                                   @bind-Value=@Player.Name @ref="nameInput"></InputText>
                     </div>
                 </div>
 
-                enteredTagline = !String.IsNullOrWhiteSpace(Player.Tagline);
+                @{
+                    enteredName = enteredTagline = !String.IsNullOrWhiteSpace(Player.Name);
+                }
 
-                if (enteredTagline)
+                @if (enteredName)
                 {
-                    <p>You will be facing 3 opponents. Defeat all three and you'll win prize money and fame!</p>
+                    <p>&nbsp;and you've entered a fighting tournament.</p>
+                    <div class="row">
+                        <p>You want people to call you the &nbsp</p>
+                        <div class="col text-input">
+                            <!--<ValidationMessage For="() => Player.Tagline"></ValidationMessage>-->
+                            <InputText tabindex="2" placeholder="type here..."
+                                       @bind-Value=@Player.Tagline @ref="taglineInput"></InputText>
+                        </div>
+                    </div>
+
+                    enteredTagline = !String.IsNullOrWhiteSpace(Player.Tagline);
+
+                    if (enteredTagline)
+                    {
+                        <p>You will be facing 3 opponents. Defeat all three and you'll win prize money and fame!</p>
+                    }
+                }
+            </article>
+            @if (enteredTagline)
+            {
+                <article class="dialogue d-plain col">
+                    <p>You've been training hard, and your fighting style is:</p>
+                    <div class="row">
+                        <button class="btn-gold btn-small" type="button" @onclick=@SetBalancedBuild>Balanced</button>
+                        <button class="btn-gold btn-small" type="button" @onclick=@SetAgileBuild>Agile</button>
+                        <button class="btn-gold btn-small" type="button" @onclick=@SetTankyBuild>Tanky</button>
+                    </div>
+                </article>
+
+                @if (choseBuild)
+                {
+                    <button class="btn-gold btn-large" type="submit">Submit</button>
                 }
             }
-        </article>
-        @if (enteredTagline)
-        {
-            <article class="dialogue d-plain col">
-                <p>You've been training hard, and your fighting style is:</p>
-                <div class="row">
-                    <button class="btn-gold btn-small" type="button" @onclick=@SetBalancedBuild>Balanced</button>
-                    <button class="btn-gold btn-small" type="button" @onclick=@SetAgileBuild>Agile</button>
-                    <button class="btn-gold btn-small" type="button" @onclick=@SetTankyBuild>Tanky</button>
-                </div>
-            </article>
-
-            @if (choseBuild)
-            {
-                <button class="btn-gold btn-large" type="submit">Submit</button>
-            }
-        }
-    </EditForm>
+        </EditForm>
+    } else
+    {
+        <h1 id="logo">TOURNAMENT FIGHTER</h1>
+        <div class="btn-wrap">
+            <button class="btn-gold btn-large" @onclick=@StartIntro>Start</button>
+        </div>
+        <button class="btn-gold btn-small" @onclick=@(() => {enabledMusic = !enabledMusic;})>MUSIC</button>
+    }
 </div>
 
 @code {
@@ -70,9 +85,13 @@
     private InputText defeatInput;
 
     private EditContext? editContext { get; set; }
+    private bool pressedStart = false;
     private bool enteredName = false;
     private bool enteredTagline = false;
     private bool choseBuild = false;
+
+    private bool enabledMusic = false;
+    private string menuMusicSrc = "media/menu.wav";
 
     private int maxNameLength = 20;
     private int maxTaglineLength = 20;
@@ -81,26 +100,38 @@
 
     protected override void OnInitialized()
     {
-        Layout.ToggleLogo(true);
+        Layout.ToggleLogo(false);
         Layout.DisableMenu();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender || !enteredName)
+        if (pressedStart)
         {
-            editContext?.Validate();
-            if (nameInput.Element.HasValue)
+            if (!enteredName)
             {
-                await nameInput.Element.Value.FocusAsync();
+                editContext?.Validate();
+                if (nameInput.Element.HasValue)
+                {
+                    await nameInput.Element.Value.FocusAsync();
+                }
             }
-        } else if (!enteredTagline)
-        {
-            if (taglineInput.Element.HasValue)
+            else if (!enteredTagline)
             {
-                await taglineInput.Element.Value.FocusAsync();
+                if (taglineInput.Element.HasValue)
+                {
+                    await taglineInput.Element.Value.FocusAsync();
+                }
             }
         }
+    }
+
+    private void StartIntro()
+    {
+        pressedStart = true;
+        Layout.ToggleLogo(true);
+        Layout.DisableMenu();
+        StateHasChanged();
     }
 
     public void SetBalancedBuild()

@@ -20,7 +20,7 @@
             Status.Frostbite);
         public static readonly Move FlameImplosion = new("Flame Implosion", ["collapsed a sphere of fire!"], 90, 80, Priority: 0,
             Status.Burn);
-        public static readonly Move ThousandCuts = new("Thousand Cuts", ["summoned a fierece sandstorm!"], 65, 100, Priority: 0,
+        public static readonly Move ThousandCuts = new("Thousand Cuts", ["summoned a fierce sandstorm!"], 65, 100, Priority: 0,
             Status.Bleed);
         public static readonly Move CursedExcalibur = new("Cursed Excalibur", ["summoned a mighty sword!"], 95, 80, Priority: 0);
     }

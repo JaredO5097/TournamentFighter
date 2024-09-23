@@ -8,17 +8,13 @@ namespace TournamentFighter.Models
         public static Character Default => new()
         {
             Name = "Default",
-            Tagline = "Perfect Specimen",
-            OpeningDialogue = @"Hello. I don't know why I'm here, but it means something went wrong.
-                                Well no matter. If you were looking for a good challenge, you've found it!",
-            Description = @"I don't believe it but there's a fully grey man in the arena ladies and gentlemen!
-                            It doesn't look like he has any hair on him too... but he seems so confident. 
-                            I can't wait to see what happens!",
-            VictoryDialogue = @"Do not despair over your loss. A mortal cannot expect to beat a god.",
-            DefeatDialogue = @"What... are you...?",
+            Tagline = "",
+            OpeningDialogue = "",
+            Description = "",
+            VictoryDialogue = "",
+            DefeatDialogue = "",
             Health = 100,
-            Moves = [Move.LongShot, Move.Punch, Move.SwordSlash, Move.AxeSwing,
-                Move.JumpKick, Move.ShortShot, Move.Counter],
+            Moves = [Move.None],
             Agility = 100,
             Defense = 100,
             Strength = 100,
@@ -80,7 +76,6 @@ namespace TournamentFighter.Models
             Accuracy = 90,
             Evasion = 70,
         };
-
         public static Character Grizwald => new()
         {
             Name = "Grizwald",
@@ -109,7 +104,7 @@ namespace TournamentFighter.Models
     {
         [Required(ErrorMessage = "Name must not be blank")]
         [StringLength(10, ErrorMessage = "Max of 10 characters")]
-        public string? Name { get; set; }
+        public string Name { get; set; } = "";
 
         [Required(ErrorMessage = "Tagline must not be blank")]
         [StringLength(15, ErrorMessage = "Max of 15 characters")]
@@ -117,8 +112,8 @@ namespace TournamentFighter.Models
 
         public string? Description { get; set; }
         public string OpeningDialogue { get; set; } = "";
-        public string? VictoryDialogue { get; set; } = "";
-        public string? DefeatDialogue { get; set; } = "";
+        public string VictoryDialogue { get; set; } = "";
+        public string DefeatDialogue { get; set; } = "";
 
         public Move[] Moves = [Move.None];
 

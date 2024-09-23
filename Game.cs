@@ -10,6 +10,7 @@ namespace TournamentFighter
         PlayerTurn,
         PlayerInput,
         OpponentTurn,
+        OpponentDialogue,
         GameOver
     }
 
@@ -87,7 +88,6 @@ namespace TournamentFighter
                 if (!Player.HasActions)
                 {
                     tracker.Enqueue(new(MessageType.PlayerInput, "What will " + Player.Name + " do next??", Move.None)); 
-                    // signify that game is waiting for player's input
                 } else
                 {
                     TakeTurn(Player, Opponent, MessageType.PlayerTurn, Player.NextAction(), tracker);
@@ -103,17 +103,28 @@ namespace TournamentFighter
             }
         }
 
-        private string GetDmgMsg(int damage)
+        private static string GetDmgMsg(int damage) => damage switch
         {
-            return damage switch
+            > 60 => "took a lethal blow!",
+            > 40 => "must've felt that!",
+            > 20 => "took some damage there!",
+            > 10 => "might've felt that!",
+            0 => "wasn't touched!",
+            _ => "took a hit!"
+        };
+
+        private void HandleDefeat(Character victor, Character target, MessageType type, MsgTracker tracker)
+        {
+            if (type == MessageType.PlayerTurn) // player won
             {
-                > 60 => "took a lethal blow!",
-                > 40 => "must've felt that!",
-                > 20 => "took some damage there!",
-                > 10 => "might've felt that!",
-                0 => "wasn't touched!",
-                _ => "took a hit!"
-            };
+                tracker.Enqueue(new(MessageType.Game, "WHOA, " + target.Name + " is on the ground! Looks like they have something to say.", Move.None));
+                tracker.Enqueue(new(MessageType.OpponentDialogue, target.DefeatDialogue, Move.None));
+            } else if (type == MessageType.OpponentTurn) // opponent won
+            {
+                tracker.Enqueue(new(MessageType.Game, "WHOA, " + target.Name + " is on the ground. That was the finishing blow!", Move.None));
+                tracker.Enqueue(new(MessageType.OpponentDialogue, victor.VictoryDialogue, Move.None));
+            }
+            tracker.Enqueue(new(MessageType.GameOver, victor.Name + " wins! That's the end of this match, wow that was exciting!", Move.None));
         }
 
         private void TakeTurn(Character actor, Character target, MessageType type, Move move, MsgTracker tracker)
@@ -131,13 +142,9 @@ namespace TournamentFighter
 
                 if (target.Health <= 0)
                 {
-                    tracker.Enqueue(new(type, "WHOA, " + target.Name + " is on the ground! Looks like they have something to say", move));
-                    if (target.DefeatDialogue != null) { tracker.Enqueue(new(type, target.DefeatDialogue, Move.None)); }
-                    tracker.Enqueue(new(MessageType.GameOver, actor.Name + " wins! That's the end of this match, wow that was exciting!", Move.None));
-                } else
-                {
-                    
-                    tracker.Enqueue(new(type, target.Name + " " + GetDmgMsg(damage), move));
+                    HandleDefeat(actor, target, type, tracker);
+                } else {
+                    tracker.Enqueue(new(type, target.Name + " " + GetDmgMsg(damage), Move.None));
                     if (damage > 0 && move.Status != Status.None)
                     {
                         target.AddStatus(move.Status, tracker);

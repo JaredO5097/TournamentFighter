@@ -9,11 +9,6 @@
     <article class="row-start stats s-plain">
         <p>@Player.Name the @Player.Tagline @Player.Health ♥</p>
         <p>Status: @Player.CurrentStatus.ToString()</p>
-        <p>Agility: @Player.Agility</p>
-        <p>Defense: @Player.Defense</p>
-        <p>Strength: @Player.Strength</p>
-        <p>Accuracy: @Player.Accuracy</p>
-        <p>Evasion: @Player.Evasion</p>
     </article>
     <article class="row-start stats s-opponent">
         <p>@Opponent.Name the @Opponent.Tagline @Opponent.Health ♥</p>
@@ -39,7 +34,7 @@
         @if (CurrentMsg != MessageModel.Empty)
         {
             <article class="@(CurrentMsg.Type == MessageType.OpponentTurn ? "dialogue d-opponent" : "dialogue d-plain")">
-                <p>@CurrentMsg.Message</p>
+                <p style="@msgStyle">@CurrentMsg.Message</p>
                 @if (CurrentMsg.Type == MessageType.PlayerInput)
                 {
                     foreach (Move move in Player.Moves)
@@ -71,6 +66,7 @@
 
     private MsgTracker MessageTracker = new MsgTracker();
     private MessageModel CurrentMsg = MessageModel.Empty;
+    private string msgStyle = "";
 
     private bool readyForNext = true;
 
@@ -79,25 +75,32 @@
     private readonly List<string> Songs = new()
     {
         "media/music1.wav",
-        "media/music2.flac",
         "media/music3.wav",
     };
 
     private readonly Dictionary<Move, string> MoveSounds = new()
     {
-        {Move.LongShot, ""},
-        {Move.Punch, ""},
-        {Move.SwordSlash, ""},
-        {Move.AxeSwing, ""},
-        {Move.RoaringMoon, ""},
-        {Move.JumpKick, ""},
+        {Move.LongShot, "media/bow2.wav"},
+        {Move.Punch, "media/punch1.wav"},
+        {Move.SwordSlash, "media/sword3.wav"},
+        {Move.AxeSwing, "media/axe1.mp3"},
+        {Move.RoaringMoon, "media/sword2.wav"},
+        {Move.JumpKick, "media/kick1.wav"},
         {Move.ShortShot, "media/bow1.wav"},
-        {Move.Counter, ""},
-        {Move.IceSpike, ""},
-        {Move.FlameImplosion, ""},
-        {Move.ThousandCuts, ""},
-        {Move.CursedExcalibur, ""},
+        {Move.Counter, "media/counter1.mp3"},
+        {Move.IceSpike, "media/ice1.wav"},
+        {Move.FlameImplosion, "media/fire1.wav"},
+        {Move.ThousandCuts, "media/wind1.wav"},
+        {Move.CursedExcalibur, "media/sword1.wav"},
     };
+
+    private readonly FrozenDictionary<string, string> CharacterFonts = new Dictionary<string, string>()
+    {
+        {"Ryalt", "ErasMedium"},
+        {"Dejourn", "RockwellConBold"},
+        {"Hina", "LucidaHandItalic"},
+        {"Grizwald", "VinerHandRegular" },
+    }.ToFrozenDictionary();
 
     private bool playingMoveAudio = false;
     private bool playingBgm = false;
@@ -127,6 +130,7 @@
 
     private void ProgressGame()
     {
+        msgStyle = "";
         if (MessageTracker.Count == 0)
         {
             Game.NextTurn(MessageTracker);
@@ -136,13 +140,19 @@
         if (CurrentMsg.Type == MessageType.OpponentTurn)
         {
             OpponentRevealedMoves[CurrentMsg.Move] = true; // just using a dictionary to avoid checking for duplicates
-
-            moveAudioSrc = MoveSounds.ContainsKey(CurrentMsg.Move) ? MoveSounds[CurrentMsg.Move] : "";
-            playingMoveAudio = true;
         }
         else if (CurrentMsg.Type == MessageType.PlayerInput)
         {
             readyForNext = false;
+        } else if (CurrentMsg.Type == MessageType.OpponentDialogue && CharacterFonts.ContainsKey(Opponent.Name))
+        {
+            msgStyle = "font-family: " + CharacterFonts[Opponent.Name];
+        }
+
+        if (MoveSounds.ContainsKey(CurrentMsg.Move))
+        {
+            moveAudioSrc = MoveSounds[CurrentMsg.Move];
+            playingMoveAudio = true;
         }
     }
 
