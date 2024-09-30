@@ -5,24 +5,24 @@
 
 <PageTitle>Battle!</PageTitle>
 
-<div id="battle-div" class="col">
-    <article class="row-start stats s-plain">
-        <p>@Player.Name the @Player.Tagline @Player.Health ♥</p>
-        <p>Status: @Player.CurrentStatus.ToString()</p>
-    </article>
-    <article class="row-start stats s-opponent">
-        <p>@Opponent.Name the @Opponent.Tagline @Opponent.Health ♥</p>
-        <p>Status: @Opponent.CurrentStatus.ToString()</p>
-        <p>Moves: </p>
-        @foreach (Move move in OpponentRevealedMoves.Keys)
+<div id="battle-div" class="row-start">
+    <article class="col stats s-plain w-10">
+        <p>@Player.Name the @Player.Tagline</p>
+        <p>@Player.Health ♥ </p>
+        @if (Player.CurrentStatus != Status.None)
         {
-            if (move != Move.None)
-            {
-                <p>@move.Name</p>
-            }
+            <p>(@Player.CurrentStatus.ToString())</p>
         }
     </article>
-    <div class="col w-60">
+    <article class="col stats s-opponent w-10">
+        <p>@Opponent.Name the @Opponent.Tagline</p>
+        <p>@Opponent.Health ♥</p>
+        @if (Opponent.CurrentStatus != Status.None)
+        {
+            <p>(@Opponent.CurrentStatus.ToString())</p>
+        }
+    </article>
+    <article class="col w-80">
         @if (playingBgm)
         {
             <audio id="bgm" autoplay src="@bgmAudioSrc"></audio>
@@ -55,7 +55,7 @@
             }
         }
 
-    </div>
+    </article>
 </div>
 
 @code {
@@ -69,8 +69,6 @@
     private string msgStyle = "";
 
     private bool readyForNext = true;
-
-    private Dictionary<Move, bool> OpponentRevealedMoves = new Dictionary<Move, bool>();
 
     private readonly List<string> Songs = new()
     {
@@ -137,11 +135,7 @@
         }
 
         CurrentMsg = MessageTracker.Dequeue();
-        if (CurrentMsg.Type == MessageType.OpponentTurn)
-        {
-            OpponentRevealedMoves[CurrentMsg.Move] = true; // just using a dictionary to avoid checking for duplicates
-        }
-        else if (CurrentMsg.Type == MessageType.PlayerInput)
+        if (CurrentMsg.Type == MessageType.PlayerInput)
         {
             readyForNext = false;
         } else if (CurrentMsg.Type == MessageType.OpponentDialogue && CharacterFonts.ContainsKey(Opponent.Name))
