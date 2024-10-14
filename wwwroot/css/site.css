@@ -7,6 +7,7 @@
 @font-face { font-family: "RockwellConBold"; src: url("../fonts/ROCCB___.TTF"); }
 @font-face { font-family: "LucidaHandItalic"; src: url("../fonts/LHANDW.TTF"); }
 @font-face { font-family: "VinerHandRegular"; src: url("../fonts/VINERITC.TTF"); }
+@font-face { font-family: "Pixellari"; src: url("../fonts/Pixellari.ttf"); }
 
 * {
     box-sizing: border-box;

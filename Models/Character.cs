@@ -91,13 +91,26 @@ namespace TournamentFighter.Models
             Health = 100,
             Moves = [Move.IceSpike, Move.FlameImplosion, Move.ThousandCuts, Move.CursedExcalibur],
             Agility = 70,
-            Defense = 60,
+            Defense = 70,
             Strength = 70,
             Accuracy = 90,
-            Evasion = 80,
+            Evasion = 70,
+        };
+        public static Character Number5 => new()
+        {
+            Name = "Number 5",
+            Tagline = "The Reassembled",
+            OpeningDialogue = @"HELLO!",
+            Description = @"Is that a robot, and is it talking?? It sure is saying some weird stuff but it looks like it's
+                            built for combat. This should be an interesting fight!",
+            VictoryDialogue = @"Number 5 [[IS ALIVE]]",
+            DefeatDialogue = @"No disassemble!",
+            Health = 100,
+            Moves = [Move.FocusedLaser, Move.CrushingGrip, Move.GroundSlam, Move.RedirectLightning],
+            Agility = 90,
         };
 
-        public static Character[] ToArray() => [Ryalt, Dejourn, Hina, Grizwald];
+        public static Character[] ToArray() => [Ryalt, Dejourn, Hina, Grizwald, Number5];
     }
 
     public class Character
@@ -135,12 +148,12 @@ namespace TournamentFighter.Models
 
         public void SetStats(int health, int agility, int defense, int strength, int accuracy, int evasion)
         {
-            Health = Math.Clamp(health, 1, 100);
-            Agility = Math.Clamp(agility, 1, 100);
-            Defense = Math.Clamp(defense, 1, 100);
-            Strength = Math.Clamp(strength, 1, 100);
-            Accuracy = Math.Clamp(accuracy, 1, 100);
-            Evasion = Math.Clamp(evasion, 1, 100);
+            Health = Math.Clamp(health, 1, SkillCap);
+            Agility = Math.Clamp(agility, 1, SkillCap);
+            Defense = Math.Clamp(defense, 1, SkillCap);
+            Strength = Math.Clamp(strength, 1, SkillCap);
+            Accuracy = Math.Clamp(accuracy, 1, SkillCap);
+            Evasion = Math.Clamp(evasion, 1, SkillCap);
         }
 
         public void ClearStatus()

@@ -6,22 +6,6 @@
 <PageTitle>Battle!</PageTitle>
 
 <div id="battle-div" class="row-start">
-    <article class="col stats s-plain w-10">
-        <p>@Player.Name the @Player.Tagline</p>
-        <p>@Player.Health ♥ </p>
-        @if (Player.CurrentStatus != Status.None)
-        {
-            <p>(@Player.CurrentStatus.ToString())</p>
-        }
-    </article>
-    <article class="col stats s-opponent w-10">
-        <p>@Opponent.Name the @Opponent.Tagline</p>
-        <p>@Opponent.Health ♥</p>
-        @if (Opponent.CurrentStatus != Status.None)
-        {
-            <p>(@Opponent.CurrentStatus.ToString())</p>
-        }
-    </article>
     <article class="col w-80">
         @if (playingBgm)
         {
@@ -54,7 +38,22 @@
                 <button class="btn-gold btn-large" @onclick="ProgressGame">Next</button>
             }
         }
-
+    </article>
+    <article class="col stats s-plain w-10">
+        <p>@Player.Name the @Player.Tagline</p>
+        <p>@Player.Health ♥ </p>
+        @if (Player.CurrentStatus != Status.None)
+        {
+            <p>(@Player.CurrentStatus.ToString())</p>
+        }
+    </article>
+    <article class="col stats s-opponent w-10">
+        <p>@Opponent.Name the @Opponent.Tagline</p>
+        <p>@Opponent.Health ♥</p>
+        @if (Opponent.CurrentStatus != Status.None)
+        {
+            <p>(@Opponent.CurrentStatus.ToString())</p>
+        }
     </article>
 </div>
 
@@ -98,6 +97,7 @@
         {"Dejourn", "RockwellConBold"},
         {"Hina", "LucidaHandItalic"},
         {"Grizwald", "VinerHandRegular" },
+        {"Number5", "Pixellari" },
     }.ToFrozenDictionary();
 
     private bool playingMoveAudio = false;

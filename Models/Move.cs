@@ -23,5 +23,12 @@
         public static readonly Move ThousandCuts = new("Thousand Cuts", ["summoned a fierce sandstorm!"], 65, 100, Priority: 0,
             Status.Bleed);
         public static readonly Move CursedExcalibur = new("Cursed Excalibur", ["summoned a mighty sword!"], 95, 80, Priority: 0);
+        public static readonly Move FocusedLaser = new("Focused Laser", ["focused a powerful laser!"], 85, 85, Priority: 0,
+            Status.Burn);
+        public static readonly Move CrushingGrip = new("Crushing Grip", ["squeezed the life out of their target!"], 85, 95, Priority: 0);
+        public static readonly Move GroundSlam = new("Ground Slam", ["leaped into the air and slammed into the ground!"],
+            90, 90, Priority: 0);
+        public static readonly Move RedirectLightning = new("Redirect Lightning", ["aimed and released a bolt of lightning!"],
+            100, 85, Priority: -1);
     }
 }

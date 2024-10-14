@@ -6,7 +6,7 @@ namespace TournamentFighter.Data
     {
         public static void Initialize(GameContext db)
         {
-            db.Characters.AddRange(CharacterList.ToArray());
+            //db.Characters.AddRange(CharacterList.ToArray());
         }
     }
 }
