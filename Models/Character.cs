@@ -100,10 +100,10 @@ namespace TournamentFighter.Models
         {
             Name = "Number 5",
             Tagline = "Reassembled",
-            OpeningDialogue = @"HELLO!",
+            OpeningDialogue = @"Howdy partner",
             Description = @"Is that a robot, and is it talking?? It sure is saying some weird stuff but it looks like it's
                             built for combat. This should be an interesting fight!",
-            VictoryDialogue = @"NUMBER 5 [[IS ALIVE]]",
+            VictoryDialogue = @"NUMBER 5 IS ALIVE",
             DefeatDialogue = @"NO DISASSEMBLE!",
             Health = 100,
             Moves = [Move.FocusedLaser, Move.CrushingGrip, Move.GroundSlam, Move.RedirectLightning],

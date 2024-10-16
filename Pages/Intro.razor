@@ -12,9 +12,9 @@
 
 @if (pressedStart)
 {
-    <EditForm class="col-start full-h" EditContext=@editContext Model=@Player OnValidSubmit=@Submit>
+    <EditForm class="intro col-start" EditContext=@editContext Model=@Player OnValidSubmit=@Submit>
         <DataAnnotationsValidator></DataAnnotationsValidator>
-        <div class="d-plain intro-15 row-center h-15">
+        <div class="intro-15 row-center">
             <p>Your name is &nbsp;</p>
             <div class="col-start text-input">
                 <!--<ValidationMessage For="() => Player.Name"></ValidationMessage>-->
@@ -27,9 +27,9 @@
         </div>
         @if (enteredName)
         {
-            <p class="d-plain intro-10 h-10">and you've entered a fighting tournament.</p>
+            <p class="intro-10">and you've entered a fighting tournament.</p>
 
-            <div class="d-plain intro-10 row-center h-10">
+            <div class="intro-10 row-center">
                 <p>You want people to call you the &nbsp</p>
                 <div class="col-start text-input">
                     <!--<ValidationMessage For="() => Player.Tagline"></ValidationMessage>-->
@@ -43,18 +43,18 @@
         }
         @if (enteredTagline)
         {
-            <p class="d-plain intro-10 h-10">You will be facing 3 opponents. Defeat all three and you'll win prize money and fame!</p>
-            <div class="d-plain intro-20 col-start h-20">
+            <p class="intro-10">You will be facing 3 opponents. Defeat all three and you'll win prize money and fame!</p>
+            <div class="intro-20 col-start">
                 <p>You've been training hard, and your fighting style is:</p>
                 <div class="row-center">
                     <button class="btn-gold btn-xsmall" type="button" @onclick=@SetBalancedBuild>Balanced</button>
                     <button class="btn-gold btn-xsmall" type="button" @onclick=@SetAgileBuild>Agile</button>
                     <button class="btn-gold btn-xsmall" type="button" @onclick=@SetTankyBuild>Tanky</button>
+                    @if (choseBuild)
+                    {
+                        <button class="btn-gold btn-small" type="submit">Submit</button>
+                    }
                 </div>
-                @if (choseBuild)
-                {
-                    <button class="btn-gold btn-small" type="submit">Submit</button>
-                }
             </div>
         }
     </EditForm>
@@ -75,8 +75,6 @@ else
 
     private InputText nameInput;
     private InputText taglineInput;
-    private InputText victoryInput;
-    private InputText defeatInput;
 
     private EditContext? editContext { get; set; }
     private bool pressedStart = false;
@@ -130,13 +128,13 @@ else
 
     public void SetBalancedBuild()
     {
-        Player.SetStats(70, 70, 60, 70, 70, 60);
+        Player.SetStats(100, 70, 60, 70, 70, 60);
         choseBuild = true;
     }
 
     public void SetAgileBuild()
     {
-        Player.SetStats(60, 90, 50, 50, 70, 80);
+        Player.SetStats(100, 90, 50, 50, 70, 80);
         choseBuild = true;
     }
 

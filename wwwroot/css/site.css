@@ -24,16 +24,33 @@ body {
     background-color: aliceblue;
 }
 
+.intro {
+    font-family: JetBrainsMono;
+    height: 100%;
+}
+
 .intro-20 {
-    font-size: 5em;
+    font-size: 3.5em;
+    height: 20%;
 }
 
 .intro-15 {
-    font-size: 7em;
+    font-size: 5.5em;
+    height: 15%;
 }
 
 .intro-10 {
-    font-size: 4em;
+    font-size: 3.5em;
+    height: 10%;
+}
+
+@keyframes Appear {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 @keyframes LogoShift {
@@ -61,13 +78,21 @@ body {
     line-height: 100%;
     transform: rotate(7.5deg) translateX(-50px) translateY(100px);
     overflow: clip;
-    animation: LogoShift 10s ease-in-out infinite;
+    opacity: 0;
+    animation: Appear 1s linear, LogoShift 10s ease-in-out 2.25s infinite;
+    animation-fill-mode: forwards;
 }
 
 .logo-bottom {
     transform: rotate(-7.5deg) translateY(500px);
     overflow: revert;
-    animation: none;
+    animation: Appear 1s linear 1.25s;
+    animation-fill-mode: forwards;
+}
+
+.logo-bottom:hover {
+    text-shadow: 6px 6px 12px #E1C06B;
+    transition: ease 0.1s;
 }
 
 .tooltip {

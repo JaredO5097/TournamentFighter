@@ -59,7 +59,6 @@ namespace TournamentFighter
 
             Character[] characters = CharacterList.ToArray();
             Opponent = characters[rng.Next(0, characters.Length)];
-            Opponent = CharacterList.Number5;
 
             Turns.Clear();
             bool playerFaster = Player.Agility == Opponent.Agility ? rng.Next(0, 2) > 0 : Player.Agility > Opponent.Agility;

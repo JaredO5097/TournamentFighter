@@ -5,56 +5,61 @@
 
 <PageTitle>Battle!</PageTitle>
 
-<div id="battle-div" class="row-start">
-    <article class="col w-80">
-        @if (playingBgm)
+@if (playingBgm)
+{
+    <audio id="bgm" autoplay src="@bgmAudioSrc"></audio>
+}
+@if (playingMoveAudio)
+{
+    <audio id="moveSound" autoplay onended="@(() => { playingMoveAudio = false; })" src="@moveAudioSrc"></audio>
+}
+
+<div id="battle-div" class="full-h col-start">
+    <div class="stats s-plain row-center h-10">
+        <p>@Player.Name the @Player.Tagline</p>
+        <p>&nbsp;@Player.Health ♥ </p>
+        @if (Player.CurrentStatus != Status.None)
         {
-            <audio id="bgm" autoplay src="@bgmAudioSrc"></audio>
+            <p>&nbsp;(@Player.CurrentStatus.ToString())</p>
         }
-        @if (playingMoveAudio)
-        {
-            <audio id="moveSound" autoplay onended="@(() => { playingMoveAudio = false; })" src="@moveAudioSrc"></audio>
-        }
-        @if (CurrentMsg != MessageModel.Empty)
-        {
-            <article class="@(CurrentMsg.Type == MessageType.OpponentTurn ? "dialogue d-opponent" : "dialogue d-plain")">
-                <p style="@msgStyle">@CurrentMsg.Message</p>
-                @if (CurrentMsg.Type == MessageType.PlayerInput)
-                {
-                    foreach (Move move in Player.Moves)
-                    {
-                        <button class="btn-gold btn-small" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
-                    }
-                }
-            </article>
-            if (CurrentMsg.Type == MessageType.GameOver)
+    </div>
+    <div class="row-center h-80 full-w">
+        <div class="col w-70">
+            @if (CurrentMsg != MessageModel.Empty)
             {
-                readyForNext = false;
-                <button class="btn-gold btn-large" @onclick="CreateNewCharacter">Create New Character</button>
-                <button class="btn-gold btn-large" @onclick="TryAgain">Try Again</button>
+                <article class="@(CurrentMsg.Type == MessageType.OpponentTurn ? "dialogue d-opponent" : "dialogue d-plain")">
+                    <p style="@msgStyle">@CurrentMsg.Message</p>
+                </article>
+            }
+        </div>
+        <div class="col w-15">
+            @if (CurrentMsg != MessageModel.Empty && CurrentMsg.Type == MessageType.PlayerInput)
+            {
+                foreach (Move move in Player.Moves)
+                {
+                    <button class="btn-gold btn-small" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
+                }
+            }
+            @if (CurrentMsg.Type == MessageType.GameOver)
+            {
+            readyForNext = false;
+            <button class="btn-gold btn-large" @onclick="CreateNewCharacter">Create New Character</button>
+            <button class="btn-gold btn-large" @onclick="TryAgain">Try Again</button>
             }
             else if (readyForNext)
             {
-                <button class="btn-gold btn-large" @onclick="ProgressGame">Next</button>
+            <button class="btn-gold btn-large" @onclick="ProgressGame">Next</button>
             }
-        }
-    </article>
-    <article class="col stats s-plain w-10">
-        <p>@Player.Name the @Player.Tagline</p>
-        <p>@Player.Health ♥ </p>
-        @if (Player.CurrentStatus != Status.None)
-        {
-            <p>(@Player.CurrentStatus.ToString())</p>
-        }
-    </article>
-    <article class="col stats s-opponent w-10">
+        </div>
+    </div>
+    <div class="stats s-opponent row-end h-10">
         <p>@Opponent.Name the @Opponent.Tagline</p>
-        <p>@Opponent.Health ♥</p>
+        <p>&nbsp;@Opponent.Health ♥</p>
         @if (Opponent.CurrentStatus != Status.None)
         {
-            <p>(@Opponent.CurrentStatus.ToString())</p>
+            <p>&nbsp;(@Opponent.CurrentStatus.ToString())</p>
         }
-    </article>
+    </div>
 </div>
 
 @code {
@@ -162,7 +167,7 @@
 
     private void CreateNewCharacter()
     {
-        Navigation.NavigateTo("/intro");
+        Navigation.NavigateTo("/");
     }
 
     private void TryAgain()
