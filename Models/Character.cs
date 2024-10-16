@@ -99,15 +99,19 @@ namespace TournamentFighter.Models
         public static Character Number5 => new()
         {
             Name = "Number 5",
-            Tagline = "The Reassembled",
+            Tagline = "Reassembled",
             OpeningDialogue = @"HELLO!",
             Description = @"Is that a robot, and is it talking?? It sure is saying some weird stuff but it looks like it's
                             built for combat. This should be an interesting fight!",
-            VictoryDialogue = @"Number 5 [[IS ALIVE]]",
-            DefeatDialogue = @"No disassemble!",
+            VictoryDialogue = @"NUMBER 5 [[IS ALIVE]]",
+            DefeatDialogue = @"NO DISASSEMBLE!",
             Health = 100,
             Moves = [Move.FocusedLaser, Move.CrushingGrip, Move.GroundSlam, Move.RedirectLightning],
-            Agility = 90,
+            Agility = 80,
+            Defense = 90,
+            Strength = 90,
+            Accuracy = 80,
+            Evasion = 70,
         };
 
         public static Character[] ToArray() => [Ryalt, Dejourn, Hina, Grizwald, Number5];

@@ -77,27 +77,31 @@
 
     private readonly Dictionary<Move, string> MoveSounds = new()
     {
-        {Move.LongShot, "media/bow2.wav"},
-        {Move.Punch, "media/punch1.wav"},
-        {Move.SwordSlash, "media/sword3.wav"},
-        {Move.AxeSwing, "media/axe1.mp3"},
-        {Move.RoaringMoon, "media/sword2.wav"},
-        {Move.JumpKick, "media/kick1.wav"},
-        {Move.ShortShot, "media/bow1.wav"},
-        {Move.Counter, "media/counter1.mp3"},
-        {Move.IceSpike, "media/ice1.wav"},
-        {Move.FlameImplosion, "media/fire1.wav"},
-        {Move.ThousandCuts, "media/wind1.wav"},
-        {Move.CursedExcalibur, "media/sword1.wav"},
+        {Move.LongShot, "media/bow2.wav" },
+        {Move.Punch, "media/punch1.wav" },
+        {Move.SwordSlash, "media/sword3.wav" },
+        {Move.AxeSwing, "media/axe1.mp3" },
+        {Move.RoaringMoon, "media/sword2.wav" },
+        {Move.JumpKick, "media/kick1.wav" },
+        {Move.ShortShot, "media/bow1.wav" },
+        {Move.Counter, "media/counter1.mp3" },
+        {Move.IceSpike, "media/ice1.wav" },
+        {Move.FlameImplosion, "media/fire1.wav" },
+        {Move.ThousandCuts, "media/wind1.wav" },
+        {Move.CursedExcalibur, "media/sword1.wav" },
+        {Move.FocusedLaser, "media/laser1.wav" },
+        {Move.CrushingGrip, "media/crunch1.wav" },
+        {Move.GroundSlam, "media/boom1.wav" },
+        {Move.RedirectLightning, "media/thunder1.wav" },
     };
 
     private readonly FrozenDictionary<string, string> CharacterFonts = new Dictionary<string, string>()
     {
-        {"Ryalt", "ErasMedium"},
-        {"Dejourn", "RockwellConBold"},
-        {"Hina", "LucidaHandItalic"},
+        {"Ryalt", "ErasMedium" },
+        {"Dejourn", "RockwellConBold" },
+        {"Hina", "LucidaHandItalic" },
         {"Grizwald", "VinerHandRegular" },
-        {"Number5", "Pixellari" },
+        {"Number 5", "Pixellari" },
     }.ToFrozenDictionary();
 
     private bool playingMoveAudio = false;

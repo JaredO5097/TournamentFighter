@@ -3,78 +3,72 @@
 @inject Game Game
 @inject NavigationManager Navigation
 
-<PageTitle>Character Creator</PageTitle>
+<PageTitle>Tournament Fighter</PageTitle>
 
-<div id="main-div" class="col">
-    @if (enabledMusic)
-    {
-        <!--<audio id="menu" autoplay src="@menuMusicSrc"></audio>-->
-    }
-    
-    @if (pressedStart)
-    {
-        <EditForm EditContext=@editContext Model=@Player OnValidSubmit=@Submit>
-            <DataAnnotationsValidator></DataAnnotationsValidator>
-            <article class="dialogue d-plain col">
-                <div class="row">
-                    <p>Your name is &nbsp;</p>
-                    <div class="col text-input">
-                        <!--<ValidationMessage For="() => Player.Name"></ValidationMessage>-->
-                        <InputText tabindex="1" placeholder="type here..."
-                                   @bind-Value=@Player.Name @ref="nameInput"></InputText>
-                    </div>
+@if (enabledMusic)
+{
+    <!--<audio id="menu" autoplay src="@menuMusicSrc"></audio>-->
+}
+
+@if (pressedStart)
+{
+    <EditForm class="col-start full-h" EditContext=@editContext Model=@Player OnValidSubmit=@Submit>
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <div class="d-plain intro-15 row-center h-15">
+            <p>Your name is &nbsp;</p>
+            <div class="col-start text-input">
+                <!--<ValidationMessage For="() => Player.Name"></ValidationMessage>-->
+                <InputText tabindex="1" placeholder="type here..."
+                           @bind-Value=@Player.Name @ref="nameInput"></InputText>
+            </div>
+            @{
+                enteredName = enteredTagline = !String.IsNullOrWhiteSpace(Player.Name);
+            }
+        </div>
+        @if (enteredName)
+        {
+            <p class="d-plain intro-10 h-10">and you've entered a fighting tournament.</p>
+
+            <div class="d-plain intro-10 row-center h-10">
+                <p>You want people to call you the &nbsp</p>
+                <div class="col-start text-input">
+                    <!--<ValidationMessage For="() => Player.Tagline"></ValidationMessage>-->
+                    <InputText tabindex="2" placeholder="type here..."
+                               @bind-Value=@Player.Tagline @ref="taglineInput"></InputText>
                 </div>
-
                 @{
-                    enteredName = enteredTagline = !String.IsNullOrWhiteSpace(Player.Name);
-                }
-
-                @if (enteredName)
-                {
-                    <p>&nbsp;and you've entered a fighting tournament.</p>
-                    <div class="row">
-                        <p>You want people to call you the &nbsp</p>
-                        <div class="col text-input">
-                            <!--<ValidationMessage For="() => Player.Tagline"></ValidationMessage>-->
-                            <InputText tabindex="2" placeholder="type here..."
-                                       @bind-Value=@Player.Tagline @ref="taglineInput"></InputText>
-                        </div>
-                    </div>
-
                     enteredTagline = !String.IsNullOrWhiteSpace(Player.Tagline);
-
-                    if (enteredTagline)
-                    {
-                        <p>You will be facing 3 opponents. Defeat all three and you'll win prize money and fame!</p>
-                    }
                 }
-            </article>
-            @if (enteredTagline)
-            {
-                <article class="dialogue d-plain col">
-                    <p>You've been training hard, and your fighting style is:</p>
-                    <div class="row">
-                        <button class="btn-gold btn-small" type="button" @onclick=@SetBalancedBuild>Balanced</button>
-                        <button class="btn-gold btn-small" type="button" @onclick=@SetAgileBuild>Agile</button>
-                        <button class="btn-gold btn-small" type="button" @onclick=@SetTankyBuild>Tanky</button>
-                    </div>
-                </article>
-
+            </div>
+        }
+        @if (enteredTagline)
+        {
+            <p class="d-plain intro-10 h-10">You will be facing 3 opponents. Defeat all three and you'll win prize money and fame!</p>
+            <div class="d-plain intro-20 col-start h-20">
+                <p>You've been training hard, and your fighting style is:</p>
+                <div class="row-center">
+                    <button class="btn-gold btn-xsmall" type="button" @onclick=@SetBalancedBuild>Balanced</button>
+                    <button class="btn-gold btn-xsmall" type="button" @onclick=@SetAgileBuild>Agile</button>
+                    <button class="btn-gold btn-xsmall" type="button" @onclick=@SetTankyBuild>Tanky</button>
+                </div>
                 @if (choseBuild)
                 {
-                    <button class="btn-gold btn-large" type="submit">Submit</button>
+                    <button class="btn-gold btn-small" type="submit">Submit</button>
                 }
-            }
-        </EditForm>
-    } else
-    {
-        <h1 id="logo">TOURNAMENT FIGHTER</h1>
-        <div class="btn-wrap">
-            <button class="btn-gold btn-large" @onclick=@StartIntro>Start</button>
-        </div>
-        <button class="btn-gold btn-small" @onclick=@(() => {enabledMusic = !enabledMusic;})>MUSIC</button>
-    }
-</div>
+            </div>
+        }
+    </EditForm>
+}
+else
+{
+    <span>
+        <h1 class="logo">TOURNAMENT</h1>
+        <h1 class="logo logo-bottom">FIGHTER</h1>
+    </span>
+    <button id="start-btn" class="btn-gold btn-large" @onclick=@StartIntro>Start</button>
+    <!--<div class="btn-wrap"></div>-->
+    <!--<button class="btn-gold btn-small" @onclick=@(() => {enabledMusic = !enabledMusic;})>MUSIC</button>-->
+}
 
 @code {
     private Character Player = new Character();

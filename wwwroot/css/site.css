@@ -8,13 +8,66 @@
 @font-face { font-family: "LucidaHandItalic"; src: url("../fonts/LHANDW.TTF"); }
 @font-face { font-family: "VinerHandRegular"; src: url("../fonts/VINERITC.TTF"); }
 @font-face { font-family: "Pixellari"; src: url("../fonts/Pixellari.ttf"); }
+@font-face { font-family: "BahnLightCond"; src: url("../fonts/BAHNSCHRIFT.TTF"); }
 
 * {
     box-sizing: border-box;
 }
 
+html, body, main {
+    height: 100%;
+    margin: 0px;
+}
+
 body {
-    background-color: #E1C06B;
+    /*background-color: #E1C06B;*/
+    background-color: aliceblue;
+}
+
+.intro-20 {
+    font-size: 5em;
+}
+
+.intro-15 {
+    font-size: 7em;
+}
+
+.intro-10 {
+    font-size: 4em;
+}
+
+@keyframes LogoShift {
+    0% {
+        transform: rotate(7.5deg) translateX(-50px) translateY(100px);
+    }
+    50% {
+        transform: rotate(7.5deg) translateX(-800px) translateY(100px);
+    }
+    100% {
+        transform: rotate(7.5deg) translateX(-50px) translateY(100px);
+    }
+}
+
+.logo {
+    position: fixed;
+    font-family: Pixellari;
+    font-size: 30em;
+    text-align: left;
+    color: #323232;
+    text-shadow: 1px 1px 2px black;
+    cursor: default;
+    margin: 0px;
+    letter-spacing: -3.5rem;
+    line-height: 100%;
+    transform: rotate(7.5deg) translateX(-50px) translateY(100px);
+    overflow: clip;
+    animation: LogoShift 10s ease-in-out infinite;
+}
+
+.logo-bottom {
+    transform: rotate(-7.5deg) translateY(500px);
+    overflow: revert;
+    animation: none;
 }
 
 .tooltip {
@@ -125,32 +178,24 @@ body {
     font-family: JetBrainsMono;
 }
 
-.text-input > p {
-    font-size: 1rem;
-}
-
 .text-input > input {
     font-family: JetBrainsMono;
-    font-size: 1.5rem;
-    background-color: #E1C06B;
+    font-size: 3.2rem;
+    /*background-color: #E1C06B;*/
+    background-color: aliceblue;
     border: medium solid black;
+}
+
+#start-btn {
+    shape-outside: content-box;
+    position: absolute;
+    top: 80%;
+    left: 87.5%;
+    transform: rotate(7.5deg);
 }
 
 #battle-div {
     padding: 50px 50px 50px 50px;
-}
-
-#main-div {
-    padding: 50px 275px 50px 275px;
-}
-
-#logo {
-    font-family: JejuHallasan;
-    font-size: 8em;
-    text-align: center;
-    color: #323232;
-    text-shadow: 2px 2px 4px black;
-    cursor: default;
 }
 
 #main-nav {
