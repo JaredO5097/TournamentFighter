@@ -12,57 +12,34 @@
 
 * {
     box-sizing: border-box;
-}
-
-html, body, main {
-    height: 100%;
     margin: 0px;
+    padding: 0px;
 }
 
-body {
-    /*background-color: #E1C06B;*/
-    background-color: aliceblue;
-}
+html, body, main { height: 100%; }
+html { font-size: 16px; }
+body { background-color: aliceblue; }
+
+.f-xlarge { font-size: 4.5rem; }
+.f-large { font-size: 4rem; }
+.f-medium { font-size: 3.5rem; }
+.f-small { font-size: 3rem; }
+.f-xsmall { font-size: 2.5rem; }
 
 .intro {
     font-family: JetBrainsMono;
     height: 100%;
 }
 
-.intro-20 {
-    font-size: 3.5em;
-    height: 20%;
-}
-
-.intro-15 {
-    font-size: 5.5em;
-    height: 15%;
-}
-
-.intro-10 {
-    font-size: 3.5em;
-    height: 10%;
-}
-
 @keyframes Appear {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
+    0% { opacity: 0; }
+    100% { opacity: 1; }
 }
 
 @keyframes LogoShift {
-    0% {
-        transform: rotate(7.5deg) translateX(-50px) translateY(100px);
-    }
-    50% {
-        transform: rotate(7.5deg) translateX(-800px) translateY(100px);
-    }
-    100% {
-        transform: rotate(7.5deg) translateX(-50px) translateY(100px);
-    }
+    0% { transform: rotate(7.5deg) translateX(-50px) translateY(100px); }
+    50% { transform: rotate(7.5deg) translateX(-800px) translateY(100px); }
+    100% { transform: rotate(7.5deg) translateX(-50px) translateY(100px); }
 }
 
 .logo {
@@ -73,20 +50,19 @@ body {
     color: #323232;
     text-shadow: 1px 1px 2px black;
     cursor: default;
-    margin: 0px;
     letter-spacing: -3.5rem;
     line-height: 100%;
     transform: rotate(7.5deg) translateX(-50px) translateY(100px);
     overflow: clip;
     opacity: 0;
-    animation: Appear 1s linear, LogoShift 10s ease-in-out 2.25s infinite;
+    animation: Appear 0.1s linear, LogoShift 10s ease-in-out 1s infinite;
     animation-fill-mode: forwards;
 }
 
 .logo-bottom {
     transform: rotate(-7.5deg) translateY(500px);
     overflow: revert;
-    animation: Appear 1s linear 1.25s;
+    animation: Appear 0.1s linear 0.5s;
     animation-fill-mode: forwards;
 }
 
@@ -95,30 +71,30 @@ body {
     transition: ease 0.1s;
 }
 
-.tooltip {
-    position: relative;
-    display: inline-block;
-    border-bottom: 1px dotted white;
-}
-
-.tooltip .tooltiptext {
-    visibility: hidden;
-    width: 120px;
-    background-color: white;
+.btn-radio {
+    font-family: JetBrainsMono;
     color: black;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 0px;
-
-    position: absolute;
-    z-index: 1;
-    bottom: 100%;
-    left: 50%;
-    margin-left: -60px;
+    text-decoration: none;
+    padding: 5px 30px 5px 30px;
+    background-color: none;
+    border: 2px solid black;
+    cursor: pointer;
+    transition-duration: 0.1s;
 }
 
-.tooltip:hover .tooltiptext {
-    visibility: visible;
+.btn-radio:hover {
+    color: ghostwhite;
+    background-color: grey;
+}
+
+.btn-radio-active {
+    color: white;
+    background-color: black;
+}
+
+.btn-radio-active:hover {
+    color: white;
+    background-color: black;
 }
 
 .btn-gold {
@@ -132,14 +108,17 @@ body {
     box-shadow: 0 9px #999;
 }
 
+.btn-gold:disabled {
+    background: none;
+    background-color: lightgrey;
+    box-shadow: none;
+    cursor: default;
+}
+
 @keyframes GradientShift {
     0% { background-position: 0% 50% }
     50% { background-position: 100% 50% }
     100% { background-position: 0% 50% }
-}
-
-.btn-gold:disabled {
-    background-color: lightgrey;
 }
 
 .btn-gold:hover {
@@ -151,6 +130,17 @@ body {
     background-color: #dccda7;
     box-shadow: 0 5px #666;
     transform: translateY(4px);
+}
+
+.btn-gold:disabled:hover {
+    animation: none;
+    background-color: lightgrey;
+}
+
+.btn-gold:disabled:active {
+    background-color: lightgrey;
+    box-shadow: none;
+    transform: none;
 }
 
 .btn-xsmall {
@@ -165,42 +155,27 @@ body {
     font-size: 2em;
 }
 
-.btn-wrap {
-    padding: 55px 35px 55px 35px;
-    background-image: url("../images/awardleaves.svg");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-}
-
 .stats {
     font-size: 1.25em;
     font-family: 'Segoe UI';
     text-align: center;
+    color: darkblue;
 }
 
 .s-opponent {
     color: orangered;
 }
 
-.s-plain {
-    color: darkblue;
-}
-
 .dialogue {
     text-align: center;
     border-radius: 10px;
     padding: 0px 35px 0px 35px;
+    font-family: JetBrainsMono;
     font-size: 1.5em;
 }
 
 .d-opponent {
     border: thin solid #FF8B8B;
-    font-family: JetBrainsMono;
-}
-
-.d-plain {
-    font-family: JetBrainsMono;
 }
 
 .text-input > input {
@@ -212,7 +187,6 @@ body {
 }
 
 #start-btn {
-    shape-outside: content-box;
     position: absolute;
     top: 80%;
     left: 87.5%;
@@ -221,25 +195,4 @@ body {
 
 #battle-div {
     padding: 50px 50px 50px 50px;
-}
-
-#main-nav {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 15px 30px 30px 15px;
-    font-size: 1.3em;
-}
-
-#main-nav > a {
-    text-decoration: none;
-    color: #323232;
-    padding: 15px;
-}
-
-#nav-logo {
-    font-family: JejuHallasan;
-    font-size: 1.5em;
-    margin-right: auto;
 }

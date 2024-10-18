@@ -10,12 +10,6 @@
     align-items: flex-start;
 }
 
-.absolute {
-    position: absolute;
-    top: 0px;
-    right: 0;
-}
-
 .full-h { height: 100%; }
 .h-80 { height: 80%; }
 .h-55 { height: 55%; }
@@ -30,9 +24,7 @@
 .w-15 { width: 15%; }
 .w-10 { width: 10%; }
 
-.wrap {
-    flex-wrap: wrap;
-}
+.wrap { flex-wrap: wrap; }
 
 .row-start {
     display: flex;

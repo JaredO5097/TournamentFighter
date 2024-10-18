@@ -14,7 +14,7 @@
 {
     <EditForm class="intro col-start" EditContext=@editContext Model=@Player OnValidSubmit=@Submit>
         <DataAnnotationsValidator></DataAnnotationsValidator>
-        <div class="intro-15 row-center">
+        <div class="f-large h-15 row-center">
             <p>Your name is &nbsp;</p>
             <div class="col-start text-input">
                 <!--<ValidationMessage For="() => Player.Name"></ValidationMessage>-->
@@ -27,9 +27,9 @@
         </div>
         @if (enteredName)
         {
-            <p class="intro-10">and you've entered a fighting tournament.</p>
+            <p class="f-medium h-10">and you've entered a fighting tournament.</p>
 
-            <div class="intro-10 row-center">
+            <div class="f-medium h-20 row-center">
                 <p>You want people to call you the &nbsp</p>
                 <div class="col-start text-input">
                     <!--<ValidationMessage For="() => Player.Tagline"></ValidationMessage>-->
@@ -43,17 +43,14 @@
         }
         @if (enteredTagline)
         {
-            <p class="intro-10">You will be facing 3 opponents. Defeat all three and you'll win prize money and fame!</p>
-            <div class="intro-20 col-start">
+            <p class="f-medium h-15">You will be facing 3 opponents. Defeat all three and you'll win prize money and fame!</p>
+            <div class="f-large h-20 col-start">
                 <p>You've been training hard, and your fighting style is:</p>
                 <div class="row-center">
-                    <button class="btn-gold btn-xsmall" type="button" @onclick=@SetBalancedBuild>Balanced</button>
-                    <button class="btn-gold btn-xsmall" type="button" @onclick=@SetAgileBuild>Agile</button>
-                    <button class="btn-gold btn-xsmall" type="button" @onclick=@SetTankyBuild>Tanky</button>
-                    @if (choseBuild)
-                    {
-                        <button class="btn-gold btn-small" type="submit">Submit</button>
-                    }
+                    <button class="@(build == "bal" ? "btn-radio-active" : "") btn-radio btn-xsmall" type="button" @onclick=@SetBalancedBuild>Balanced</button>
+                    <button class="@(build == "agi" ? "btn-radio-active" : "") btn-radio btn-xsmall" type="button" @onclick=@SetAgileBuild>Agile</button>
+                    <button class="@(build == "tnk" ? "btn-radio-active" : "") btn-radio btn-xsmall" type="button" @onclick=@SetTankyBuild>Tanky</button>
+                    <button class="btn-gold btn-small" type="submit" disabled="@(!choseBuild)">Submit</button>
                 </div>
             </div>
         }
@@ -66,7 +63,6 @@ else
         <h1 class="logo logo-bottom">FIGHTER</h1>
     </span>
     <button id="start-btn" class="btn-gold btn-large" @onclick=@StartIntro>Start</button>
-    <!--<div class="btn-wrap"></div>-->
     <!--<button class="btn-gold btn-small" @onclick=@(() => {enabledMusic = !enabledMusic;})>MUSIC</button>-->
 }
 
@@ -81,6 +77,7 @@ else
     private bool enteredName = false;
     private bool enteredTagline = false;
     private bool choseBuild = false;
+    private string build = "";
 
     private bool enabledMusic = false;
     private string menuMusicSrc = "media/menu.wav";
@@ -126,22 +123,25 @@ else
         StateHasChanged();
     }
 
-    public void SetBalancedBuild()
+    public async void SetBalancedBuild()
     {
         Player.SetStats(100, 70, 60, 70, 70, 60);
         choseBuild = true;
+        build = "bal";
     }
 
-    public void SetAgileBuild()
+    public async void SetAgileBuild()
     {
         Player.SetStats(100, 90, 50, 50, 70, 80);
         choseBuild = true;
+        build = "agi";
     }
 
-    public void SetTankyBuild()
+    public async void SetTankyBuild()
     {
         Player.SetStats(100, 40, 90, 100, 40, 30);
         choseBuild = true;
+        build = "tnk";
     }
 
     public void Submit()

@@ -15,7 +15,7 @@
 }
 
 <div id="battle-div" class="full-h col-start">
-    <div class="stats s-plain row-center h-10">
+    <div class="stats row-center h-10">
         <p>@Player.Name the @Player.Tagline</p>
         <p>&nbsp;@Player.Health ♥ </p>
         @if (Player.CurrentStatus != Status.None)
@@ -37,7 +37,8 @@
             {
                 foreach (Move move in Player.Moves)
                 {
-                    <button class="btn-gold btn-small" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
+                    <button class="@(chosenMove == move.Name ? "btn-radio-active" : "") 
+                        btn-radio btn-small" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
                 }
             }
             @if (CurrentMsg.Type == MessageType.GameOver)
@@ -46,9 +47,9 @@
             <button class="btn-gold btn-large" @onclick="CreateNewCharacter">Create New Character</button>
             <button class="btn-gold btn-large" @onclick="TryAgain">Try Again</button>
             }
-            else if (readyForNext)
+            else
             {
-            <button class="btn-gold btn-large" @onclick="ProgressGame">Next</button>
+            <button class="btn-gold btn-large" @onclick="ProgressGame" disabled="@(!readyForNext)">Next</button>
             }
         </div>
     </div>
@@ -72,6 +73,7 @@
     private MessageModel CurrentMsg = MessageModel.Empty;
     private string msgStyle = "";
 
+    private string chosenMove = "";
     private bool readyForNext = true;
 
     private readonly List<string> Songs = new()
@@ -138,6 +140,7 @@
     private void ProgressGame()
     {
         msgStyle = "";
+        chosenMove = "";
         if (MessageTracker.Count == 0)
         {
             Game.NextTurn(MessageTracker);
@@ -163,6 +166,7 @@
     {
         Game.RecordPlayerMove(move);
         readyForNext = true;
+        chosenMove = move.Name;
     }
 
     private void CreateNewCharacter()
