@@ -16,7 +16,7 @@
         <DataAnnotationsValidator></DataAnnotationsValidator>
         <div class="f-large h-15 row-center">
             <p>Your name is &nbsp;</p>
-            <div class="col-start text-input">
+            <div class="f-largeAll text-input">
                 <!--<ValidationMessage For="() => Player.Name"></ValidationMessage>-->
                 <InputText tabindex="1" placeholder="type here..."
                            @bind-Value=@Player.Name @ref="nameInput"></InputText>
@@ -31,7 +31,7 @@
 
             <div class="f-medium h-20 row-center">
                 <p>You want people to call you the &nbsp</p>
-                <div class="col-start text-input">
+                <div class="f-mediumAll text-input">
                     <!--<ValidationMessage For="() => Player.Tagline"></ValidationMessage>-->
                     <InputText tabindex="2" placeholder="type here..."
                                @bind-Value=@Player.Tagline @ref="taglineInput"></InputText>
@@ -47,10 +47,10 @@
             <div class="f-large h-20 col-start">
                 <p>You've been training hard, and your fighting style is:</p>
                 <div class="row-center">
-                    <button class="@(build == "bal" ? "btn-radio-active" : "") btn-radio btn-xsmall" type="button" @onclick=@SetBalancedBuild>Balanced</button>
-                    <button class="@(build == "agi" ? "btn-radio-active" : "") btn-radio btn-xsmall" type="button" @onclick=@SetAgileBuild>Agile</button>
-                    <button class="@(build == "tnk" ? "btn-radio-active" : "") btn-radio btn-xsmall" type="button" @onclick=@SetTankyBuild>Tanky</button>
-                    <button class="btn-gold btn-small" type="submit" disabled="@(!choseBuild)">Submit</button>
+                    <button class="@(build == "bal" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetBalancedBuild>Balanced</button>
+                    <button class="@(build == "agi" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetAgileBuild>Agile</button>
+                    <button class="@(build == "tnk" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetTankyBuild>Tanky</button>
+                    <button class="btn-gold f-medium" type="submit" disabled="@(!choseBuild)">Submit</button>
                 </div>
             </div>
         }
@@ -62,8 +62,7 @@ else
         <h1 class="logo">TOURNAMENT</h1>
         <h1 class="logo logo-bottom">FIGHTER</h1>
     </span>
-    <button id="start-btn" class="btn-gold btn-large" @onclick=@StartIntro>Start</button>
-    <!--<button class="btn-gold btn-small" @onclick=@(() => {enabledMusic = !enabledMusic;})>MUSIC</button>-->
+    <button id="start-btn" class="btn-gold f-small" @onclick=@StartIntro>Start</button>
 }
 
 @code {

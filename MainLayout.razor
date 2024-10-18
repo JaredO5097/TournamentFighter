@@ -2,10 +2,6 @@
 
 <CascadingValue Value="this">
     <header>
-        @if (CurrentTheme is not null)
-        {
-            @CurrentTheme
-        }
         <!--<nav id="main-nav">
             @if (logoActive)
             {
@@ -18,13 +14,6 @@
                 {
                     <div class="col w-20 absolute s-plain wrap">
                         <button type="button" class="btn-gold btn-small" @onclick=@ToggleMenu>X</button>
-                        <h3>Theme</h3>
-                        <div class="row-center">
-                            <button type="button" class="btn-gold btn-xsmall" @onclick=@SetDefaultTheme>Arena (Default)</button>
-                            <button type="button" class="btn-gold btn-xsmall" @onclick=@SetPinkTheme>Pink</button>
-                            <button type="button" class="btn-gold btn-xsmall" @onclick=@SetAquaticTheme>Aquatic</button>
-                            <button type="button" class="btn-gold btn-xsmall" @onclick=@SetAstroTheme>Astro</button>
-                        </div>
                         <h3>About</h3>
                         <p>
                             Tournament Fighter is a fighting game. Defeat your opponents, and win the tournament!
@@ -43,37 +32,8 @@
 </CascadingValue>
 
 @code {
-    private RenderFragment? CurrentTheme = null;
-
     private bool logoActive = true;
     private bool menuActive = false;
-
-    public void SetDefaultTheme() => CurrentTheme = null;
-    public void SetPinkTheme()
-    {
-        CurrentTheme = @<style>
-                                body {
-                                    background-color: lightpink;
-                                }
-                       </style>;
-    }
-    public void SetAquaticTheme()
-    {
-        CurrentTheme = @<style>
-                                body {
-                                    background-color: lightblue;
-                                }
-                       </style>;
-    }
-    public void SetAstroTheme()
-    {
-        CurrentTheme = @<style>
-                                body {
-                                    background-color: whitesmoke;
-                                }
-                       </style>
-    ;
-    }
 
     public void ToggleLogo(bool active)
     {

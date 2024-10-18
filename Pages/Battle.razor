@@ -1,5 +1,5 @@
 ﻿@page "/battle"
-@inherits MainLayout
+@inherits ComponentBase
 @inject Game Game
 @inject NavigationManager Navigation
 
@@ -13,9 +13,13 @@
 {
     <audio id="moveSound" autoplay onended="@(() => { playingMoveAudio = false; })" src="@moveAudioSrc"></audio>
 }
+@if (CurrentTheme is not null)
+{
+    @CurrentTheme
+}
 
-<div id="battle-div" class="full-h col-start">
-    <div class="stats row-center h-10">
+<div class="full-h col-start">
+    <div class="stats f-xsmall row-center h-10">
         <p>@Player.Name the @Player.Tagline</p>
         <p>&nbsp;@Player.Health ♥ </p>
         @if (Player.CurrentStatus != Status.None)
@@ -24,7 +28,7 @@
         }
     </div>
     <div class="row-center h-80 full-w">
-        <div class="col w-70">
+        <div class="col f-small w-70">
             @if (CurrentMsg != MessageModel.Empty)
             {
                 <article class="@(CurrentMsg.Type == MessageType.OpponentTurn ? "dialogue d-opponent" : "dialogue d-plain")">
@@ -32,28 +36,48 @@
                 </article>
             }
         </div>
-        <div class="col w-15">
+        <div class="col full-h evenly w-15">
             @if (CurrentMsg != MessageModel.Empty && CurrentMsg.Type == MessageType.PlayerInput)
             {
                 foreach (Move move in Player.Moves)
                 {
                     <button class="@(chosenMove == move.Name ? "btn-radio-active" : "") 
-                        btn-radio btn-small" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
+                        btn-radio f-xsmall" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
                 }
             }
             @if (CurrentMsg.Type == MessageType.GameOver)
             {
             readyForNext = false;
-            <button class="btn-gold btn-large" @onclick="CreateNewCharacter">Create New Character</button>
-            <button class="btn-gold btn-large" @onclick="TryAgain">Try Again</button>
+            <button class="btn-gold f-small" @onclick="CreateNewCharacter">Create New Character</button>
+            <button class="btn-gold f-small" @onclick="TryAgain">Try Again</button>
             }
             else
             {
-            <button class="btn-gold btn-large" @onclick="ProgressGame" disabled="@(!readyForNext)">Next</button>
+            <button class="btn-gold f-xsmall" @onclick="ProgressGame" disabled="@(!readyForNext)">Next</button>
             }
         </div>
+        <div class="col full-h evenly w-15">
+            <button class="@(playingBgm ? "btn-radio-active" : "") 
+                btn-radio f-xsmall" type="button" @onclick=@ToggleBgm>MUSIC</button>
+            <button class="@(themeStr == "default" ? "btn-radio-active" : "") 
+                btn-radio f-xsmall" type="button" @onclick=@SetDefaultTheme>Arena (Default)</button>
+            <button class="@(themeStr == "pink" ? "btn-radio-active" : "") 
+                btn-radio f-xsmall" type="button" @onclick=@SetPinkTheme>Pink</button>
+            <button class="@(themeStr == "aqua" ? "btn-radio-active" : "") 
+                btn-radio f-xsmall" type="button" @onclick=@SetAquaticTheme>Aquatic</button>
+            <button class="@(themeStr == "astro" ? "btn-radio-active" : "") 
+                btn-radio f-xsmall" type="button" @onclick=@SetAstroTheme>Astro</button>
+            @if (canReturnToMain)
+            {
+                <button class="btn-gold f-xsmall" type="button" @onclick="CreateNewCharacter">Sure?</button>
+            } else
+            {
+                <button class="btn-gold f-xsmall" type="button" @onclick="AllowReturnToMain">MENU</button>
+            }
+            
+        </div>
     </div>
-    <div class="stats s-opponent row-end h-10">
+    <div class="stats f-xsmall s-opponent row-end h-10">
         <p>@Opponent.Name the @Opponent.Tagline</p>
         <p>&nbsp;@Opponent.Health ♥</p>
         @if (Opponent.CurrentStatus != Status.None)
@@ -67,7 +91,11 @@
     private Character Player = CharacterList.Default;
     private Character Opponent = CharacterList.Default;
 
+    private static Timer _timer = new Timer();
     private static readonly Random _rng = new();
+
+    private RenderFragment? CurrentTheme = null;
+    private string themeStr = "default";
 
     private MsgTracker MessageTracker = new MsgTracker();
     private MessageModel CurrentMsg = MessageModel.Empty;
@@ -75,6 +103,15 @@
 
     private string chosenMove = "";
     private bool readyForNext = true;
+
+    private bool canReturnToMain = false;
+
+    private bool playingMoveAudio = false;
+    private bool playingBgm = false;
+    private string moveAudioSrc = "";
+    private string bgmAudioSrc = "media/music1.wav";
+
+    [CascadingParameter] public MainLayout Layout { get; set; }
 
     private readonly List<string> Songs = new()
     {
@@ -111,18 +148,13 @@
         {"Number 5", "Pixellari" },
     }.ToFrozenDictionary();
 
-    private bool playingMoveAudio = false;
-    private bool playingBgm = false;
-    private string moveAudioSrc = "";
-    private string bgmAudioSrc = "";
-
-    [CascadingParameter] public MainLayout Layout { get; set; }
-
     protected override void OnInitialized()
     {
-        Layout.DisableMenu();
         Player = Game.Player;
         Opponent = Game.Opponent;
+
+        _timer.Interval = 3000;
+        _timer.Elapsed += OnMainTimeout;
 
         MessageTracker.Clear();
         MessageTracker.Enqueue(new(MessageType.Game, "Welcome ladies and gentlemen, to the annual IRONMAN tournament!\n" +
@@ -169,6 +201,18 @@
         chosenMove = move.Name;
     }
 
+    private async void OnMainTimeout(Object source, ElapsedEventArgs e)
+    {
+        canReturnToMain = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void AllowReturnToMain()
+    {
+        canReturnToMain = true;
+        _timer.Start();
+    }
+
     private void CreateNewCharacter()
     {
         Navigation.NavigateTo("/");
@@ -176,7 +220,46 @@
 
     private void TryAgain()
     {
+        playingBgm = false;
         Game.SetUpWithExistingPlayer();
         Navigation.Refresh();
+    }
+
+    public void ToggleBgm()
+    {
+        playingBgm = !playingBgm;
+    }
+
+    public void SetDefaultTheme() 
+    {
+        themeStr = "default";
+        CurrentTheme = null;
+    }
+    public void SetPinkTheme()
+    {
+        themeStr = "pink";
+        CurrentTheme = @<style>
+                                body {
+                                    background-color: lightpink;
+                                }
+                        </style>;
+    }
+    public void SetAquaticTheme()
+    {
+        themeStr = "aqua";
+        CurrentTheme = @<style>
+                                body {
+                                    background-color: lightblue;
+                                }
+                        </style>;
+    }
+    public void SetAstroTheme()
+    {
+        themeStr = "astro";
+        CurrentTheme = @<style>
+                                body {
+                                    background-color: whitesmoke;
+                                }
+                        </style>;
     }
 }

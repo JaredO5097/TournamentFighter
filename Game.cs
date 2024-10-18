@@ -135,19 +135,27 @@ namespace TournamentFighter
             } else
             {
                 actor.UpdateStatus(tracker);
-
-                int attack = actor.AttackWith(move);
-                int damage = target.TakeAttack(attack, move, tracker);
-                tracker.Enqueue(new(type, actor.Name + " " + move.Messages[0], move));
-
-                if (target.Health <= 0)
+                if (actor.Health <= 0)
                 {
-                    HandleDefeat(actor, target, type, tracker);
-                } else {
-                    tracker.Enqueue(new(type, target.Name + " " + GetDmgMsg(damage), Move.None));
-                    if (damage > 0 && move.Status != Status.None)
+                    MessageType reverse = type == MessageType.PlayerTurn ? MessageType.OpponentTurn : MessageType.PlayerTurn;
+                    HandleDefeat(target, actor, reverse, tracker);
+                } else
+                {
+                    int attack = actor.AttackWith(move);
+                    int damage = target.TakeAttack(attack, move, tracker);
+                    tracker.Enqueue(new(type, actor.Name + " " + move.Messages[0], move));
+
+                    if (target.Health <= 0)
                     {
-                        target.AddStatus(move.Status, tracker);
+                        HandleDefeat(actor, target, type, tracker);
+                    }
+                    else
+                    {
+                        tracker.Enqueue(new(type, target.Name + " " + GetDmgMsg(damage), Move.None));
+                        if (damage > 0 && move.Status != Status.None)
+                        {
+                            target.AddStatus(move.Status, tracker);
+                        }
                     }
                 }
             }

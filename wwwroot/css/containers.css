@@ -10,6 +10,8 @@
     align-items: flex-start;
 }
 
+.evenly { justify-content: space-evenly; }
+
 .full-h { height: 100%; }
 .h-80 { height: 80%; }
 .h-55 { height: 55%; }

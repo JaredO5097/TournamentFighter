@@ -22,7 +22,9 @@ body { background-color: aliceblue; }
 
 .f-xlarge { font-size: 4.5rem; }
 .f-large { font-size: 4rem; }
+.f-largeAll > * { font-size: 4rem; }
 .f-medium { font-size: 3.5rem; }
+.f-mediumAll > * { font-size: 3.5rem; }
 .f-small { font-size: 3rem; }
 .f-xsmall { font-size: 2.5rem; }
 
@@ -45,7 +47,7 @@ body { background-color: aliceblue; }
 .logo {
     position: fixed;
     font-family: Pixellari;
-    font-size: 30em;
+    font-size: 30rem;
     text-align: left;
     color: #323232;
     text-shadow: 1px 1px 2px black;
@@ -143,20 +145,7 @@ body { background-color: aliceblue; }
     transform: none;
 }
 
-.btn-xsmall {
-    font-size: 0.7em;
-}
-
-.btn-small {
-    font-size: 1em;
-}
-
-.btn-large {
-    font-size: 2em;
-}
-
 .stats {
-    font-size: 1.25em;
     font-family: 'Segoe UI';
     text-align: center;
     color: darkblue;
@@ -171,7 +160,6 @@ body { background-color: aliceblue; }
     border-radius: 10px;
     padding: 0px 35px 0px 35px;
     font-family: JetBrainsMono;
-    font-size: 1.5em;
 }
 
 .d-opponent {
@@ -180,8 +168,6 @@ body { background-color: aliceblue; }
 
 .text-input > input {
     font-family: JetBrainsMono;
-    font-size: 3.2rem;
-    /*background-color: #E1C06B;*/
     background-color: aliceblue;
     border: medium solid black;
 }
@@ -189,10 +175,6 @@ body { background-color: aliceblue; }
 #start-btn {
     position: absolute;
     top: 80%;
-    left: 87.5%;
+    left: 82.5%;
     transform: rotate(7.5deg);
-}
-
-#battle-div {
-    padding: 50px 50px 50px 50px;
 }
