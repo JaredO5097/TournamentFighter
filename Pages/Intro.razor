@@ -14,6 +14,7 @@
 {
     <EditForm class="intro col-start" EditContext=@editContext Model=@Player OnValidSubmit=@Submit>
         <DataAnnotationsValidator></DataAnnotationsValidator>
+
         <div class="f-large h-15 row-center">
             <p>Your name is &nbsp;</p>
             <div class="f-largeAll text-input">
@@ -50,6 +51,7 @@
                     <button class="@(build == "bal" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetBalancedBuild>Balanced</button>
                     <button class="@(build == "agi" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetAgileBuild>Agile</button>
                     <button class="@(build == "tnk" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetTankyBuild>Tanky</button>
+                    <button class="@(build == "wiz" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetWizardBuild>WIZARD</button>
                     <button class="btn-gold f-medium" type="submit" disabled="@(!choseBuild)">Submit</button>
                 </div>
             </div>
@@ -84,14 +86,6 @@ else
     private int maxNameLength = 20;
     private int maxTaglineLength = 20;
 
-    [CascadingParameter] public MainLayout Layout { get; set; }
-
-    protected override void OnInitialized()
-    {
-        Layout.ToggleLogo(false);
-        Layout.DisableMenu();
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (pressedStart)
@@ -117,37 +111,46 @@ else
     private void StartIntro()
     {
         pressedStart = true;
-        Layout.ToggleLogo(true);
-        Layout.DisableMenu();
         StateHasChanged();
     }
 
-    public async void SetBalancedBuild()
+    public void SetBalancedBuild()
     {
-        Player.SetStats(100, 70, 60, 70, 70, 60);
+        Player.SetStats(100, 70, 60, 70, 70);
+        Player.Moves = [Move.Punch, Move.SwordSlash, Move.GroundSlam, Move.Counter];
         choseBuild = true;
         build = "bal";
     }
 
-    public async void SetAgileBuild()
+    public void SetAgileBuild()
     {
-        Player.SetStats(100, 90, 50, 50, 70, 80);
+        Player.SetStats(100, 90, 50, 50, 70);
+        Player.Moves = [Move.Punch, Move.CrushingGrip, Move.JumpKick, Move.Counter];
         choseBuild = true;
         build = "agi";
     }
 
-    public async void SetTankyBuild()
+    public void SetTankyBuild()
     {
-        Player.SetStats(100, 40, 90, 100, 40, 30);
+        Player.SetStats(100, 40, 90, 100, 40);
+        Player.Moves = [Move.Punch, Move.CrushingGrip, Move.AxeSwing, Move.Counter];
         choseBuild = true;
         build = "tnk";
+    }
+
+    public void SetWizardBuild()
+    {
+        Player.SetStats(100, 50, 50, 100, 100);
+        Player.Moves = [Move.IceSpike, Move.FlameImplosion, Move.CursedExcalibur, Move.RedirectLightning];
+        choseBuild = true;
+        build = "wiz";
     }
 
     public void Submit()
     {
         if (enteredName && enteredTagline && choseBuild)
         {
-            Game.SetUp(Player);
+            Game.InitializeNewGame(Player);
             Navigation.NavigateTo("/battle");
         }
     }

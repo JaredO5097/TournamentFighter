@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Linq;
 using Random = System.Random;
 
 namespace TournamentFighter.Models
@@ -19,7 +21,6 @@ namespace TournamentFighter.Models
             Defense = 100,
             Strength = 100,
             Accuracy = 100,
-            Evasion = 100,
         };
         public static Character Ryalt => new()
         {
@@ -38,7 +39,6 @@ namespace TournamentFighter.Models
             Defense = 30,
             Strength = 60,
             Accuracy = 90,
-            Evasion = 70,
         };
         public static Character Dejourn => new()
         {
@@ -56,7 +56,6 @@ namespace TournamentFighter.Models
             Defense = 80,
             Strength = 90,
             Accuracy = 80,
-            Evasion = 50,
         };
         public static Character Hina => new()
         {
@@ -74,7 +73,6 @@ namespace TournamentFighter.Models
             Defense = 50,
             Strength = 90,
             Accuracy = 90,
-            Evasion = 70,
         };
         public static Character Grizwald => new()
         {
@@ -94,7 +92,6 @@ namespace TournamentFighter.Models
             Defense = 70,
             Strength = 70,
             Accuracy = 90,
-            Evasion = 70,
         };
         public static Character Number5 => new()
         {
@@ -111,10 +108,27 @@ namespace TournamentFighter.Models
             Defense = 90,
             Strength = 90,
             Accuracy = 80,
-            Evasion = 70,
         };
 
-        public static Character[] ToArray() => [Ryalt, Dejourn, Hina, Grizwald, Number5];
+        private static readonly int NumCharacters = 5;
+        private static Character[] ToArray() => [Ryalt, Dejourn, Hina, Grizwald, Number5];
+
+        public static Queue<Character> GetUniqueSet(int n, Random rng)
+        {
+            int[] indices = Enumerable.Range(0, Math.Clamp(n, 1, NumCharacters)).ToArray();
+            for (int i = 0; i < indices.Length; i++)
+            {
+                int rand = rng.Next(indices.Length);
+                (indices[i], indices[rand]) = (indices[rand], indices[i]);
+            }
+            Character[] characters = ToArray();
+            Queue<Character> res = new(indices.Length);
+            for (int i = 0; i < indices.Length; i++)
+            {
+                res.Enqueue(characters[indices[i]]);
+            }
+            return res;
+        }
     }
 
     public class Character
@@ -139,25 +153,34 @@ namespace TournamentFighter.Models
         public Status CurrentStatus { get; private set; } = Status.None;
         private int TurnsUntilStatusExpire = 0;
 
-        // Health + Agility + Defense + Strength + Accuracy + Evasion = 400
+        // Health + Agility + Defense + Strength + Accuracy = 350
         public int Health { get; set; }
+        private int initHealth;
         public int Agility { get; set; }
+        private int initAgility;
         public int Defense { get; set; }
+        private int initDefense;
         public int Strength { get; set; }
+        private int initStrength;
         public int Accuracy { get; set; }
-        public int Evasion { get; set; }
+        private int initAccuracy;
 
-        private const int SkillCap = 100;
+        private const int SKILL_CAP = 100;
         private readonly static Random _rng = new Random();
 
-        public void SetStats(int health, int agility, int defense, int strength, int accuracy, int evasion)
+        public void SetStats(int health, int agility, int defense, int strength, int accuracy)
         {
-            Health = Math.Clamp(health, 1, SkillCap);
-            Agility = Math.Clamp(agility, 1, SkillCap);
-            Defense = Math.Clamp(defense, 1, SkillCap);
-            Strength = Math.Clamp(strength, 1, SkillCap);
-            Accuracy = Math.Clamp(accuracy, 1, SkillCap);
-            Evasion = Math.Clamp(evasion, 1, SkillCap);
+            Health = initHealth = Math.Clamp(health, 1, SKILL_CAP);
+            Agility = initAgility = Math.Clamp(agility, 1, SKILL_CAP);
+            Defense = initDefense = Math.Clamp(defense, 1, SKILL_CAP);
+            Strength = initStrength = Math.Clamp(strength, 1, SKILL_CAP);
+            Accuracy = initAccuracy = Math.Clamp(accuracy, 1, SKILL_CAP);
+        }
+
+        public void ResetStats()
+        {
+            Health = initHealth; Agility = initAgility; Defense = initDefense;
+            Strength = initStrength; Accuracy = initAccuracy;
         }
 
         public void ClearStatus()
@@ -185,7 +208,7 @@ namespace TournamentFighter.Models
                     tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " got their strength back!", Move.None));
                 } else if (CurrentStatus == Status.Frostbite)
                 {
-                    Evasion += 15;
+                    Agility += 15;
                     tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " can move their body again!", Move.None));
                 } else if (CurrentStatus == Status.Immobile)
                 {
@@ -200,6 +223,12 @@ namespace TournamentFighter.Models
         {
             if (CurrentStatus != status)
             {
+                if (CurrentStatus != Status.None)
+                {
+                    TurnsUntilStatusExpire = 1;
+                    UpdateStatus(tracker);
+                }
+
                 CurrentStatus = status;
                 if (status == Status.Bleed)
                 {
@@ -212,7 +241,7 @@ namespace TournamentFighter.Models
                 }
                 else if (status == Status.Frostbite)
                 {
-                    Evasion -= 15;
+                    Agility -= 15;
                     tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + "'s body is tense...", Move.None));
                 }
                 else if (status == Status.Immobile)
@@ -227,7 +256,7 @@ namespace TournamentFighter.Models
         public int TakeAttack(int incomingDamage, Move move, MsgTracker tracker)
         {
             int actualDamage = 0;
-            if (_rng.Next(1, SkillCap + 1) > (int)Math.Ceiling(0.15f * Evasion)) // did not evade
+            if (_rng.Next(1, SKILL_CAP + 1) > (int)Math.Ceiling(0.15f * Agility)) // did not evade
             {
                 actualDamage = incomingDamage - (int)(0.75f * Defense);
                 if (actualDamage < 0) { actualDamage = 0; }
@@ -238,14 +267,19 @@ namespace TournamentFighter.Models
 
         public int AttackWith(Move move)
         {
-            if (_rng.Next(1, SkillCap + 1) <= Accuracy) // character accuracy check
+            if (_rng.Next(1, SKILL_CAP + 1) <= Accuracy) // character accuracy check
             {
-                if (_rng.Next(1, SkillCap + 1) <= move.BaseAccuracy) // move accuracy check
+                if (_rng.Next(1, SKILL_CAP + 1) <= move.BaseAccuracy) // move accuracy check
                 {
                     return move.BaseDamage + (int)(0.10f * Strength);
                 }
             }
             return 0;
+        }
+
+        public void ClearActions()
+        {
+            Actions.Clear();
         }
 
         public void QueueRandomMove()

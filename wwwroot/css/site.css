@@ -27,6 +27,7 @@ body { background-color: aliceblue; }
 .f-mediumAll > * { font-size: 3.5rem; }
 .f-small { font-size: 3rem; }
 .f-xsmall { font-size: 2.5rem; }
+.f-xxsmall { font-size: 2rem; }
 
 .intro {
     font-family: JetBrainsMono;
@@ -146,7 +147,7 @@ body { background-color: aliceblue; }
 }
 
 .stats {
-    font-family: 'Segoe UI';
+    font-family: "ErasMedium";
     text-align: center;
     color: darkblue;
 }

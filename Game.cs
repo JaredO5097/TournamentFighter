@@ -11,7 +11,9 @@ namespace TournamentFighter
         PlayerInput,
         OpponentTurn,
         OpponentDialogue,
-        GameOver
+        PlayerVictory,
+        OpponentVictory,
+        NewChampion,
     }
 
     public enum Status
@@ -36,40 +38,81 @@ namespace TournamentFighter
     {
         private readonly Queue<MessageType> Turns = new Queue<MessageType>();
 
-        private static readonly Random rng = new Random();
+        private static readonly Random _rng = new Random();
 
         private Move PlayerInput = Move.None;
 
-        private CharacterMutableStats playerInit;
+        private const int MAX_MATCHES = 3;
+        public int MatchNumber { get; private set; } = 1;
+
+        private Queue<Character> OpponentQueue = new Queue<Character>();
         public Character Player { get; private set; } = CharacterList.Default;
         public Character Opponent { get; private set; } = CharacterList.Default;
 
-        public void SetUpWithExistingPlayer()
+        private void RefreshPlayer()
         {
-            Player.Health = playerInit.Health;
-            Player.ClearStatus();
-            SetUp(Player);
+            Player.ResetStats();
+            Player.ClearActions();
         }
 
-        public void SetUp(Character playerModel)
+        private void InitializeTurns()
         {
-            playerInit = new CharacterMutableStats(playerModel.Health);
-            Player = playerModel;
-            Player.Moves = [Move.Punch, Move.SwordSlash, Move.JumpKick, Move.Counter];
-
-            Character[] characters = CharacterList.ToArray();
-            Opponent = characters[rng.Next(0, characters.Length)];
-
             Turns.Clear();
-            bool playerFaster = Player.Agility == Opponent.Agility ? rng.Next(0, 2) > 0 : Player.Agility > Opponent.Agility;
+            bool playerFaster = Player.Agility == Opponent.Agility ? _rng.Next(0, 2) > 0 : Player.Agility > Opponent.Agility;
             if (playerFaster)
             {
                 Turns.Enqueue(MessageType.PlayerTurn);
                 Turns.Enqueue(MessageType.OpponentTurn);
-            } else
+            }
+            else
             {
                 Turns.Enqueue(MessageType.OpponentTurn);
                 Turns.Enqueue(MessageType.PlayerTurn);
+            }
+        }
+
+        public void SetIntroMessages(MsgTracker tracker)
+        {
+            if (MatchNumber == 1)
+            {
+                tracker.Enqueue(new(MessageType.Game, "Welcome ladies and gentlemen, to the annual IRONMAN tournament!\n" +
+                    "It's a bright sunny day here, and we've got some great fighters for you this year!\n" +
+                    "Here comes our first one, " + Player.Name + "! They look like they're here to win!", Move.None));
+            }
+            else if (MatchNumber == 2)
+            {
+                tracker.Enqueue(new(MessageType.Game, Player.Name + " has moved on to the second round!\n" +
+                    "But can they keep their momentum??", Move.None));
+            }
+            else if (MatchNumber == 3)
+            {
+                tracker.Enqueue(new(MessageType.Game, "It's the final round ladies and gentlemen! If " + Player.Name +
+                    " wins this, they'll be crowned our new champion!", Move.None));
+            }
+
+            tracker.Enqueue(new(MessageType.Game, "And here's their opponent. " + Opponent.Description, Move.None));
+        }
+
+        public void InitializeNewGame(Character playerModel)
+        {
+            Player = playerModel;
+            RefreshPlayer();
+
+            MatchNumber = 1;
+            OpponentQueue = CharacterList.GetUniqueSet(MAX_MATCHES, _rng);
+            Opponent = OpponentQueue.Dequeue();
+
+            InitializeTurns();
+        }
+
+        public void NextMatch()
+        {
+            MatchNumber++;
+            if (MatchNumber <= MAX_MATCHES)
+            {
+                Opponent = OpponentQueue.Dequeue();
+                RefreshPlayer();
+                InitializeTurns();
             }
         }
 
@@ -119,12 +162,20 @@ namespace TournamentFighter
             {
                 tracker.Enqueue(new(MessageType.Game, "WHOA, " + target.Name + " is on the ground! Looks like they have something to say.", Move.None));
                 tracker.Enqueue(new(MessageType.OpponentDialogue, target.DefeatDialogue, Move.None));
+                if (MatchNumber == MAX_MATCHES)
+                {
+                    tracker.Enqueue(new(MessageType.NewChampion, victor.Name + " is our new IRONMAN tournament champion!" +
+                        " Well done " + victor.Name + "!", Move.None));
+                } else
+                {
+                    tracker.Enqueue(new(MessageType.PlayerVictory, victor.Name + " wins! That's the end of this match, wow that was exciting!", Move.None));
+                }
             } else if (type == MessageType.OpponentTurn) // opponent won
             {
                 tracker.Enqueue(new(MessageType.Game, "WHOA, " + target.Name + " is on the ground. That was the finishing blow!", Move.None));
                 tracker.Enqueue(new(MessageType.OpponentDialogue, victor.VictoryDialogue, Move.None));
+                tracker.Enqueue(new(MessageType.OpponentVictory, victor.Name + " wins! That's the end of this match, wow that was exciting!", Move.None));
             }
-            tracker.Enqueue(new(MessageType.GameOver, victor.Name + " wins! That's the end of this match, wow that was exciting!", Move.None));
         }
 
         private void TakeTurn(Character actor, Character target, MessageType type, Move move, MsgTracker tracker)

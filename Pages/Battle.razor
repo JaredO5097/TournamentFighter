@@ -19,7 +19,7 @@
 }
 
 <div class="full-h col-start">
-    <div class="stats f-xsmall row-center h-10">
+    <div class="stats f-xxsmall row-center h-10">
         <p>@Player.Name the @Player.Tagline</p>
         <p>&nbsp;@Player.Health ♥ </p>
         @if (Player.CurrentStatus != Status.None)
@@ -39,45 +39,55 @@
         <div class="col full-h evenly w-15">
             @if (CurrentMsg != MessageModel.Empty && CurrentMsg.Type == MessageType.PlayerInput)
             {
-                foreach (Move move in Player.Moves)
-                {
-                    <button class="@(chosenMove == move.Name ? "btn-radio-active" : "") 
-                        btn-radio f-xsmall" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
-                }
+                <div class="col">
+                    @foreach (Move move in Player.Moves)
+                    {
+                        <button class="@(chosenMove == move.Name ? "btn-radio-active" : "") 
+                            btn-radio f-xxsmall" type="button" @onclick="() => RecordMove(move)">@move.Name</button>
+                    }
+                </div>
             }
-            @if (CurrentMsg.Type == MessageType.GameOver)
+            @if (CurrentMsg.Type == MessageType.OpponentVictory)
             {
-            readyForNext = false;
-            <button class="btn-gold f-small" @onclick="CreateNewCharacter">Create New Character</button>
-            <button class="btn-gold f-small" @onclick="TryAgain">Try Again</button>
-            }
-            else
+                readyForNext = false;
+                <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">Create New Character</button>
+                <button class="btn-gold f-xsmall" @onclick="TryAgain">Try Again</button>
+            } else if (CurrentMsg.Type == MessageType.PlayerVictory)
             {
-            <button class="btn-gold f-xsmall" @onclick="ProgressGame" disabled="@(!readyForNext)">Next</button>
+                readyForNext = false;
+                <button class="btn-gold f-xsmall" @onclick="NextMatch">Next Match</button>
+            } else if (CurrentMsg.Type == MessageType.NewChampion)
+            {
+                <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">Create New Character</button>
+            } else
+            {
+                <button class="btn-gold f-xxsmall" @onclick="ProgressGame" disabled="@(!readyForNext)">Next</button>
             }
         </div>
         <div class="col full-h evenly w-15">
             <button class="@(playingBgm ? "btn-radio-active" : "") 
-                btn-radio f-xsmall" type="button" @onclick=@ToggleBgm>MUSIC</button>
-            <button class="@(themeStr == "default" ? "btn-radio-active" : "") 
-                btn-radio f-xsmall" type="button" @onclick=@SetDefaultTheme>Arena (Default)</button>
-            <button class="@(themeStr == "pink" ? "btn-radio-active" : "") 
-                btn-radio f-xsmall" type="button" @onclick=@SetPinkTheme>Pink</button>
-            <button class="@(themeStr == "aqua" ? "btn-radio-active" : "") 
-                btn-radio f-xsmall" type="button" @onclick=@SetAquaticTheme>Aquatic</button>
-            <button class="@(themeStr == "astro" ? "btn-radio-active" : "") 
-                btn-radio f-xsmall" type="button" @onclick=@SetAstroTheme>Astro</button>
+                btn-radio f-xxsmall" type="button" @onclick=@ToggleBgm>MUSIC</button>
+            <div class="col">
+                <button class="@(themeStr == "default" ? "btn-radio-active" : "")
+                    btn-radio f-xxsmall" type="button" @onclick=@SetDefaultTheme>Arena</button>
+                <button class="@(themeStr == "pink" ? "btn-radio-active" : "")
+                    btn-radio f-xxsmall" type="button" @onclick=@SetPinkTheme>Pink</button>
+                <button class="@(themeStr == "aqua" ? "btn-radio-active" : "")
+                    btn-radio f-xxsmall" type="button" @onclick=@SetAquaticTheme>Aqua</button>
+                <button class="@(themeStr == "astro" ? "btn-radio-active" : "")
+                    btn-radio f-xxsmall" type="button" @onclick=@SetAstroTheme>Astro</button>
+            </div>
             @if (canReturnToMain)
             {
-                <button class="btn-gold f-xsmall" type="button" @onclick="CreateNewCharacter">Sure?</button>
+                <button class="btn-gold f-xxsmall" type="button" @onclick="CreateNewCharacter">Sure?</button>
             } else
             {
-                <button class="btn-gold f-xsmall" type="button" @onclick="AllowReturnToMain">MENU</button>
+                <button class="btn-gold f-xxsmall" type="button" @onclick="AllowReturnToMain">MENU</button>
             }
             
         </div>
     </div>
-    <div class="stats f-xsmall s-opponent row-end h-10">
+    <div class="stats f-xxsmall s-opponent row-end h-10">
         <p>@Opponent.Name the @Opponent.Tagline</p>
         <p>&nbsp;@Opponent.Health ♥</p>
         @if (Opponent.CurrentStatus != Status.None)
@@ -110,8 +120,6 @@
     private bool playingBgm = false;
     private string moveAudioSrc = "";
     private string bgmAudioSrc = "media/music1.wav";
-
-    [CascadingParameter] public MainLayout Layout { get; set; }
 
     private readonly List<string> Songs = new()
     {
@@ -157,11 +165,8 @@
         _timer.Elapsed += OnMainTimeout;
 
         MessageTracker.Clear();
-        MessageTracker.Enqueue(new(MessageType.Game, "Welcome ladies and gentlemen, to the annual IRONMAN tournament!\n" +
-                "It's a bright sunny day here, and we've got some great fighters for you this year!\n" +
-                "Here comes our first one, " + Player.Name + "! They look like they're here to win!", Move.None));
-        MessageTracker.Enqueue(new(MessageType.Game, "And here's their opponent. " + Opponent.Description, Move.None));
-        //MessageTracker.Enqueue(new(MessageType.Game, Opponent.OpeningDialogue, Move.None));
+        Game.SetIntroMessages(MessageTracker);
+
         readyForNext = true;
 
         bgmAudioSrc = Songs[_rng.Next(0, Songs.Count)];
@@ -201,35 +206,37 @@
         chosenMove = move.Name;
     }
 
-    private async void OnMainTimeout(Object source, ElapsedEventArgs e)
+    private void NextMatch()
+    {
+        playingBgm = false;
+        Game.NextMatch();
+        Navigation.Refresh();
+    }
+    private void CreateNewCharacter()
+    {
+        Navigation.NavigateTo("/");
+    }
+    private void TryAgain()
+    {
+        playingBgm = false;
+        Game.InitializeNewGame(Player);
+        Navigation.Refresh();
+    }
+
+    private async void OnMainTimeout(Object? source, ElapsedEventArgs e)
     {
         canReturnToMain = false;
         await InvokeAsync(StateHasChanged);
     }
-
     private void AllowReturnToMain()
     {
         canReturnToMain = true;
         _timer.Start();
     }
-
-    private void CreateNewCharacter()
-    {
-        Navigation.NavigateTo("/");
-    }
-
-    private void TryAgain()
-    {
-        playingBgm = false;
-        Game.SetUpWithExistingPlayer();
-        Navigation.Refresh();
-    }
-
     public void ToggleBgm()
     {
         playingBgm = !playingBgm;
     }
-
     public void SetDefaultTheme() 
     {
         themeStr = "default";
