@@ -21,7 +21,6 @@ namespace TournamentFighter
         None,
         Bleed,
         Burn,
-        Frostbite,
         Immobile,
     }
 
@@ -48,12 +47,6 @@ namespace TournamentFighter
         private Queue<Character> OpponentQueue = new Queue<Character>();
         public Character Player { get; private set; } = CharacterList.Default;
         public Character Opponent { get; private set; } = CharacterList.Default;
-
-        private void RefreshPlayer()
-        {
-            Player.ResetStats();
-            Player.ClearActions();
-        }
 
         private void InitializeTurns()
         {
@@ -96,7 +89,7 @@ namespace TournamentFighter
         public void InitializeNewGame(Character playerModel)
         {
             Player = playerModel;
-            RefreshPlayer();
+            Player.Refresh();
 
             MatchNumber = 1;
             OpponentQueue = CharacterList.GetUniqueSet(MAX_MATCHES, _rng);
@@ -111,7 +104,7 @@ namespace TournamentFighter
             if (MatchNumber <= MAX_MATCHES)
             {
                 Opponent = OpponentQueue.Dequeue();
-                RefreshPlayer();
+                Player.Refresh();
                 InitializeTurns();
             }
         }

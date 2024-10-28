@@ -31,7 +31,7 @@ body { background-color: aliceblue; }
 
 .intro {
     font-family: JetBrainsMono;
-    height: 100%;
+    padding: 1rem;
 }
 
 @keyframes Appear {
@@ -41,14 +41,14 @@ body { background-color: aliceblue; }
 
 @keyframes LogoShift {
     0% { transform: rotate(7.5deg) translateX(-50px) translateY(100px); }
-    50% { transform: rotate(7.5deg) translateX(-800px) translateY(100px); }
+    50% { transform: rotate(7.5deg) translateX(-1300px) translateY(100px); }
     100% { transform: rotate(7.5deg) translateX(-50px) translateY(100px); }
 }
 
 .logo {
     position: fixed;
     font-family: Pixellari;
-    font-size: 30rem;
+    font-size: 35rem;
     text-align: left;
     color: #323232;
     text-shadow: 1px 1px 2px black;
@@ -63,7 +63,7 @@ body { background-color: aliceblue; }
 }
 
 .logo-bottom {
-    transform: rotate(-7.5deg) translateY(500px);
+    transform: rotate(-7.5deg) translateX(-50px) translateY(500px);
     overflow: revert;
     animation: Appear 0.1s linear 0.5s;
     animation-fill-mode: forwards;
@@ -150,6 +150,7 @@ body { background-color: aliceblue; }
     font-family: "ErasMedium";
     text-align: center;
     color: darkblue;
+    padding: 0 2rem 0 2rem;
 }
 
 .s-opponent {
@@ -157,14 +158,8 @@ body { background-color: aliceblue; }
 }
 
 .dialogue {
-    text-align: center;
-    border-radius: 10px;
-    padding: 0px 35px 0px 35px;
     font-family: JetBrainsMono;
-}
-
-.d-opponent {
-    border: thin solid #FF8B8B;
+    text-align: center;
 }
 
 .text-input > input {

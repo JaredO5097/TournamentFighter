@@ -28,15 +28,11 @@
         }
     </div>
     <div class="row-center h-80 full-w">
-        <div class="col f-small w-70">
-            @if (CurrentMsg != MessageModel.Empty)
-            {
-                <article class="@(CurrentMsg.Type == MessageType.OpponentTurn ? "dialogue d-opponent" : "dialogue d-plain")">
-                    <p style="@msgStyle">@CurrentMsg.Message</p>
-                </article>
-            }
-        </div>
-        <div class="col full-h evenly w-15">
+        @if (CurrentMsg != MessageModel.Empty)
+        {
+            <p class="dialogue f-small w-70" style=@msgStyle>@dynamicMsg</p>
+        }
+        <div class="col-center full-h w-15">
             @if (CurrentMsg != MessageModel.Empty && CurrentMsg.Type == MessageType.PlayerInput)
             {
                 <div class="col">
@@ -50,7 +46,7 @@
             @if (CurrentMsg.Type == MessageType.OpponentVictory)
             {
                 readyForNext = false;
-                <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">Create New Character</button>
+                <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">New Character</button>
                 <button class="btn-gold f-xsmall" @onclick="TryAgain">Try Again</button>
             } else if (CurrentMsg.Type == MessageType.PlayerVictory)
             {
@@ -68,6 +64,7 @@
             <button class="@(playingBgm ? "btn-radio-active" : "") 
                 btn-radio f-xxsmall" type="button" @onclick=@ToggleBgm>MUSIC</button>
             <div class="col">
+                <p class="dialogue f-xxsmall">Theme</p>
                 <button class="@(themeStr == "default" ? "btn-radio-active" : "")
                     btn-radio f-xxsmall" type="button" @onclick=@SetDefaultTheme>Arena</button>
                 <button class="@(themeStr == "pink" ? "btn-radio-active" : "")
@@ -84,10 +81,9 @@
             {
                 <button class="btn-gold f-xxsmall" type="button" @onclick="AllowReturnToMain">MENU</button>
             }
-            
         </div>
     </div>
-    <div class="stats f-xxsmall s-opponent row-end h-10">
+    <div class="stats f-xxsmall s-opponent row-end full-w h-10">
         <p>@Opponent.Name the @Opponent.Tagline</p>
         <p>&nbsp;@Opponent.Health ♥</p>
         @if (Opponent.CurrentStatus != Status.None)
@@ -101,7 +97,9 @@
     private Character Player = CharacterList.Default;
     private Character Opponent = CharacterList.Default;
 
-    private static Timer _timer = new Timer();
+    private static Timer _menuTimer = new Timer();
+    private static Task? _typeOutMsg;
+
     private static readonly Random _rng = new();
 
     private RenderFragment? CurrentTheme = null;
@@ -109,6 +107,8 @@
 
     private MsgTracker MessageTracker = new MsgTracker();
     private MessageModel CurrentMsg = MessageModel.Empty;
+    private StringBuilder baseMsg = new StringBuilder();
+    private StringBuilder dynamicMsg = new StringBuilder();
     private string msgStyle = "";
 
     private string chosenMove = "";
@@ -161,8 +161,8 @@
         Player = Game.Player;
         Opponent = Game.Opponent;
 
-        _timer.Interval = 3000;
-        _timer.Elapsed += OnMainTimeout;
+        _menuTimer.Interval = 3000;
+        _menuTimer.Elapsed += OnMainTimeout;
 
         MessageTracker.Clear();
         Game.SetIntroMessages(MessageTracker);
@@ -178,12 +178,21 @@
     {
         msgStyle = "";
         chosenMove = "";
+        baseMsg.Clear();
+        dynamicMsg.Clear();
+        _typeOutMsg?.Dispose();
+        _typeOutMsg = new Task(TypeOutMsg);
+
         if (MessageTracker.Count == 0)
         {
             Game.NextTurn(MessageTracker);
         }
 
         CurrentMsg = MessageTracker.Dequeue();
+        baseMsg.Append(CurrentMsg.Message);
+        dynamicMsg.Append(' ', baseMsg.Length);
+        _typeOutMsg.Start();
+
         if (CurrentMsg.Type == MessageType.PlayerInput)
         {
             readyForNext = false;
@@ -223,6 +232,16 @@
         Navigation.Refresh();
     }
 
+    private async void TypeOutMsg()
+    {
+        for (int i = 0; i < baseMsg.Length; i++)
+        {
+            dynamicMsg[i] = baseMsg[i];
+            await Task.Delay(35);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
     private async void OnMainTimeout(Object? source, ElapsedEventArgs e)
     {
         canReturnToMain = false;
@@ -231,7 +250,7 @@
     private void AllowReturnToMain()
     {
         canReturnToMain = true;
-        _timer.Start();
+        _menuTimer.Start();
     }
     public void ToggleBgm()
     {

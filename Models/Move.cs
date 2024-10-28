@@ -17,7 +17,7 @@
         public static readonly Move Counter = new("Counter", ["dodged then attacked!"], 100, 100, Priority: -1);
 
         public static readonly Move IceSpike = new("Ice Spike", ["raised a massive ice spike from below!"], 80, 90, Priority: 0,
-            Status.Frostbite);
+            Status.Immobile);
         public static readonly Move FlameImplosion = new("Flame Implosion", ["collapsed a sphere of fire!"], 90, 80, Priority: 0,
             Status.Burn);
         public static readonly Move ThousandCuts = new("Thousand Cuts", ["summoned a fierce sandstorm!"], 65, 100, Priority: 0,

@@ -115,15 +115,15 @@ namespace TournamentFighter.Models
 
         public static Queue<Character> GetUniqueSet(int n, Random rng)
         {
-            int[] indices = Enumerable.Range(0, Math.Clamp(n, 1, NumCharacters)).ToArray();
+            int[] indices = Enumerable.Range(0, NumCharacters).ToArray();
             for (int i = 0; i < indices.Length; i++)
             {
                 int rand = rng.Next(indices.Length);
                 (indices[i], indices[rand]) = (indices[rand], indices[i]);
             }
             Character[] characters = ToArray();
-            Queue<Character> res = new(indices.Length);
-            for (int i = 0; i < indices.Length; i++)
+            Queue<Character> res = new(n);
+            for (int i = 0; i < n; i++)
             {
                 res.Enqueue(characters[indices[i]]);
             }
@@ -177,14 +177,12 @@ namespace TournamentFighter.Models
             Accuracy = initAccuracy = Math.Clamp(accuracy, 1, SKILL_CAP);
         }
 
-        public void ResetStats()
+        public void Refresh()
         {
             Health = initHealth; Agility = initAgility; Defense = initDefense;
             Strength = initStrength; Accuracy = initAccuracy;
-        }
 
-        public void ClearStatus()
-        {
+            Actions.Clear();
             CurrentStatus = Status.None;
             TurnsUntilStatusExpire = 0;
         }
@@ -206,10 +204,6 @@ namespace TournamentFighter.Models
                 {
                     Strength += 15;
                     tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " got their strength back!", Move.None));
-                } else if (CurrentStatus == Status.Frostbite)
-                {
-                    Agility += 15;
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " can move their body again!", Move.None));
                 } else if (CurrentStatus == Status.Immobile)
                 {
                     Agility += 15;
@@ -239,11 +233,6 @@ namespace TournamentFighter.Models
                     Strength -= 15;
                     tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some strength...", Move.None));
                 }
-                else if (status == Status.Frostbite)
-                {
-                    Agility -= 15;
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + "'s body is tense...", Move.None));
-                }
                 else if (status == Status.Immobile)
                 {
                     Agility -= 15;
@@ -267,19 +256,18 @@ namespace TournamentFighter.Models
 
         public int AttackWith(Move move)
         {
-            if (_rng.Next(1, SKILL_CAP + 1) <= Accuracy) // character accuracy check
+            int res = move.BaseAccuracy + ((Accuracy * Accuracy / 10000) * (100 - move.BaseAccuracy));
+            // res is the result of using the character's accuracy to increase the move's base accuracy
+            // The closer the character's accuracy is to SKILL_CAP, or 100, the more significant this increase is
+            // res = moveAccuracy + (((charAccuracy^2)/(100^2))(100 - moveAccuracy))
+            if (_rng.Next(1, SKILL_CAP + 1) <= res)
             {
-                if (_rng.Next(1, SKILL_CAP + 1) <= move.BaseAccuracy) // move accuracy check
-                {
-                    return move.BaseDamage + (int)(0.10f * Strength);
-                }
+                return move.BaseDamage + (int)(0.10f * Strength);
+            } else
+            {
+                return 0;
             }
-            return 0;
-        }
-
-        public void ClearActions()
-        {
-            Actions.Clear();
+            
         }
 
         public void QueueRandomMove()
