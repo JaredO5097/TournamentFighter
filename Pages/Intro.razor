@@ -48,10 +48,12 @@
             <div class="f-medium h-30 col-center">
                 <p>You've been training hard, and your fighting style is:</p>
                 <div class="row-end full-w">
-                    <button class="@(build == "bal" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetBalancedBuild>Balanced</button>
-                    <button class="@(build == "agi" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetAgileBuild>Agile</button>
-                    <button class="@(build == "tnk" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetTankyBuild>Tanky</button>
-                    <button class="@(build == "wiz" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetWizardBuild>WIZARD</button>
+                    <div class="row-end w-70">
+                        <button class="@(build == "bal" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetBalancedBuild>Balanced</button>
+                        <button class="@(build == "agi" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetAgileBuild>Agile</button>
+                        <button class="@(build == "tnk" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetTankyBuild>Tanky</button>
+                        <button class="@(build == "wiz" ? "btn-radio-active" : "") btn-radio f-medium" type="button" @onclick=@SetWizardBuild>WIZARD</button>
+                    </div>
                     <button class="btn-gold f-medium" type="submit" disabled="@(!choseBuild)">Submit</button>
                 </div>
             </div>
@@ -60,10 +62,8 @@
 }
 else
 {
-    <div>
-        <h1 class="logo">TOURNAMENT</h1>
-        <h1 class="logo logo-bottom">FIGHTER</h1>
-    </div>
+    <h1 class="logo">TOURNAMENT</h1>
+    <h1 class="logo logo-bottom">FIGHTER</h1>
     <button id="start-btn" class="btn-gold f-small" @onclick=@StartIntro>Start</button>
 }
 

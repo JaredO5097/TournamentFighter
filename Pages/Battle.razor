@@ -18,7 +18,7 @@
     @CurrentTheme
 }
 
-<div class="full-h col-start">
+<div class="battle full-h col-start">
     <div class="stats f-xxsmall row-center h-10">
         <p>@Player.Name the @Player.Tagline</p>
         <p>&nbsp;@Player.Health ♥ </p>
@@ -28,10 +28,12 @@
         }
     </div>
     <div class="row-center h-80 full-w">
-        @if (CurrentMsg != MessageModel.Empty)
-        {
-            <p class="dialogue f-small w-70" style=@msgStyle>@dynamicMsg</p>
-        }
+        <div class="row-start h-30 w-70">
+            @if (CurrentMsg != MessageModel.Empty)
+            {
+                <p class="dialogue f-small" style=@msgStyle>@dynamicMsg</p>
+            }
+        </div>
         <div class="col-center full-h w-15">
             @if (CurrentMsg != MessageModel.Empty && CurrentMsg.Type == MessageType.PlayerInput)
             {
@@ -61,8 +63,10 @@
             }
         </div>
         <div class="col full-h evenly w-15">
-            <button class="@(playingBgm ? "btn-radio-active" : "") 
-                btn-radio f-xxsmall" type="button" @onclick=@ToggleBgm>MUSIC</button>
+            <div class="col">
+                <button class="@(playingBgm ? "btn-radio-active" : "") 
+                    btn-radio f-xxsmall" type="button" @onclick=@ToggleBgm>MUSIC</button>
+            </div>
             <div class="col">
                 <p class="dialogue f-xxsmall">Theme</p>
                 <button class="@(themeStr == "default" ? "btn-radio-active" : "")
@@ -99,6 +103,7 @@
 
     private static Timer _menuTimer = new Timer();
     private static Task? _typeOutMsg;
+    private CancellationTokenSource _ts = new CancellationTokenSource();
 
     private static readonly Random _rng = new();
 
@@ -174,14 +179,14 @@
         ProgressGame();
     }
 
-    private void ProgressGame()
+    private async void ProgressGame()
     {
+        _ts.Cancel();
+
         msgStyle = "";
         chosenMove = "";
         baseMsg.Clear();
         dynamicMsg.Clear();
-        _typeOutMsg?.Dispose();
-        _typeOutMsg = new Task(TypeOutMsg);
 
         if (MessageTracker.Count == 0)
         {
@@ -191,7 +196,9 @@
         CurrentMsg = MessageTracker.Dequeue();
         baseMsg.Append(CurrentMsg.Message);
         dynamicMsg.Append(' ', baseMsg.Length);
-        _typeOutMsg.Start();
+        _ts = new CancellationTokenSource();
+        CancellationToken ct = _ts.Token;
+        Task.Run(() => TypeOutMsg(ct));
 
         if (CurrentMsg.Type == MessageType.PlayerInput)
         {
@@ -232,12 +239,23 @@
         Navigation.Refresh();
     }
 
-    private async void TypeOutMsg()
+    private async void TypeOutMsg(CancellationToken ct)
     {
         for (int i = 0; i < baseMsg.Length; i++)
         {
+            if (ct.IsCancellationRequested) { break; }
+
             dynamicMsg[i] = baseMsg[i];
-            await Task.Delay(35);
+            if (dynamicMsg[i] == ' ')
+            {
+                await Task.Delay(35);
+            } else if (dynamicMsg[i] == '\n')
+            {
+                await Task.Delay(105);
+            } else
+            {
+                await Task.Delay(15);
+            }
             await InvokeAsync(StateHasChanged);
         }
     }

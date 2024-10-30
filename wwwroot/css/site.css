@@ -34,6 +34,10 @@ body { background-color: aliceblue; }
     padding: 1rem;
 }
 
+.battle {
+    padding: 1rem;
+}
+
 @keyframes Appear {
     0% { opacity: 0; }
     100% { opacity: 1; }
@@ -78,6 +82,8 @@ body { background-color: aliceblue; }
     font-family: JetBrainsMono;
     color: black;
     text-decoration: none;
+    text-align: center;
+    width: 100%;
     padding: 5px 30px 5px 30px;
     background-color: none;
     border: 2px solid black;
@@ -150,7 +156,6 @@ body { background-color: aliceblue; }
     font-family: "ErasMedium";
     text-align: center;
     color: darkblue;
-    padding: 0 2rem 0 2rem;
 }
 
 .s-opponent {
@@ -159,7 +164,7 @@ body { background-color: aliceblue; }
 
 .dialogue {
     font-family: JetBrainsMono;
-    text-align: center;
+    text-align: left;
 }
 
 .text-input > input {

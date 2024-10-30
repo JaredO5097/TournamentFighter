@@ -24,8 +24,6 @@ namespace TournamentFighter
         Immobile,
     }
 
-    public readonly record struct CharacterMutableStats(int Health);
-
     public readonly record struct MessageModel(MessageType Type, string Message, Move Move)
     {
         public static readonly MessageModel Empty = new(MessageType.Empty, "", Move.None);
@@ -44,6 +42,7 @@ namespace TournamentFighter
         private const int MAX_MATCHES = 3;
         public int MatchNumber { get; private set; } = 1;
 
+        private readonly CharacterList OpponentList = new CharacterList();
         private Queue<Character> OpponentQueue = new Queue<Character>();
         public Character Player { get; private set; } = CharacterList.Default;
         public Character Opponent { get; private set; } = CharacterList.Default;
@@ -75,11 +74,11 @@ namespace TournamentFighter
             else if (MatchNumber == 2)
             {
                 tracker.Enqueue(new(MessageType.Game, Player.Name + " has moved on to the second round!\n" +
-                    "But can they keep their momentum??", Move.None));
+                    "But can they keep up their momentum??", Move.None));
             }
             else if (MatchNumber == 3)
             {
-                tracker.Enqueue(new(MessageType.Game, "It's the final round ladies and gentlemen! If " + Player.Name +
+                tracker.Enqueue(new(MessageType.Game, "This is it, it's the final round! If " + Player.Name +
                     " wins this, they'll be crowned our new champion!", Move.None));
             }
 
@@ -92,8 +91,9 @@ namespace TournamentFighter
             Player.Refresh();
 
             MatchNumber = 1;
-            OpponentQueue = CharacterList.GetUniqueSet(MAX_MATCHES, _rng);
+            OpponentQueue = OpponentList.GetUniqueSet(MAX_MATCHES, _rng);
             Opponent = OpponentQueue.Dequeue();
+            Opponent.Refresh();
 
             InitializeTurns();
         }
@@ -104,6 +104,7 @@ namespace TournamentFighter
             if (MatchNumber <= MAX_MATCHES)
             {
                 Opponent = OpponentQueue.Dequeue();
+                Opponent.Refresh();
                 Player.Refresh();
                 InitializeTurns();
             }
@@ -166,7 +167,7 @@ namespace TournamentFighter
             } else if (type == MessageType.OpponentTurn) // opponent won
             {
                 tracker.Enqueue(new(MessageType.Game, "WHOA, " + target.Name + " is on the ground. That was the finishing blow!", Move.None));
-                tracker.Enqueue(new(MessageType.OpponentDialogue, victor.VictoryDialogue, Move.None));
+                tracker.Enqueue(new(MessageType.OpponentDialogue, victor.GetVictoryLine(), Move.None));
                 tracker.Enqueue(new(MessageType.OpponentVictory, victor.Name + " wins! That's the end of this match, wow that was exciting!", Move.None));
             }
         }
