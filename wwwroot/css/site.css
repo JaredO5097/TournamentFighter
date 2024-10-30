@@ -22,9 +22,7 @@ body { background-color: aliceblue; }
 
 .f-xlarge { font-size: 4.5rem; }
 .f-large { font-size: 4rem; }
-.f-largeAll > * { font-size: 4rem; }
 .f-medium { font-size: 3.5rem; }
-.f-mediumAll > * { font-size: 3.5rem; }
 .f-small { font-size: 3rem; }
 .f-xsmall { font-size: 2.5rem; }
 .f-xxsmall { font-size: 2rem; }
@@ -167,7 +165,7 @@ body { background-color: aliceblue; }
     text-align: left;
 }
 
-.text-input > input {
+.text-input {
     font-family: JetBrainsMono;
     background-color: aliceblue;
     border: medium solid black;

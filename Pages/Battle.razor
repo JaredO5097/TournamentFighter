@@ -98,8 +98,8 @@
 </div>
 
 @code {
-    private Character Player = CharacterList.Default;
-    private Character Opponent = CharacterList.Default;
+    private Character Player;
+    private Character Opponent;
 
     private static Timer _menuTimer = new Timer();
     private static Task? _typeOutMsg;
@@ -163,8 +163,7 @@
 
     protected override void OnInitialized()
     {
-        Player = Game.Player;
-        Opponent = Game.Opponent;
+        (Player, Opponent) = Game.PlayerAndOpponent;
 
         _menuTimer.Interval = 3000;
         _menuTimer.Elapsed += OnMainTimeout;

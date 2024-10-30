@@ -24,6 +24,16 @@ namespace TournamentFighter
         Immobile,
     }
 
+    public record Stats(int Health, int Agility, int Defense, int Strength, int Accuracy);
+    public record struct MutableStats(int Health, int Agility, int Defense, int Strength, int Accuracy)
+    {
+        public void SetAll(Stats stats)
+        {
+            Health = stats.Health; Agility = stats.Agility; Defense = stats.Defense;
+            Strength = stats.Strength; Accuracy = stats.Accuracy;
+        }
+    }
+
     public readonly record struct MessageModel(MessageType Type, string Message, Move Move)
     {
         public static readonly MessageModel Empty = new(MessageType.Empty, "", Move.None);
@@ -44,8 +54,10 @@ namespace TournamentFighter
 
         private readonly CharacterList OpponentList = new CharacterList();
         private Queue<Character> OpponentQueue = new Queue<Character>();
-        public Character Player { get; private set; } = CharacterList.Default;
-        public Character Opponent { get; private set; } = CharacterList.Default;
+
+        private Character Player;
+        private Character Opponent;
+        public (Character, Character) PlayerAndOpponent => (Player, Opponent);
 
         private void InitializeTurns()
         {

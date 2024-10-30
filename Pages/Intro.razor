@@ -12,18 +12,13 @@
 
 @if (pressedStart)
 {
-    <EditForm class="intro col-start full-h" EditContext=@editContext Model=@Player OnValidSubmit=@Submit>
-        <DataAnnotationsValidator></DataAnnotationsValidator>
-
+    <form class="intro col-start full-h" @onsubmit=@Submit>
         <div class="f-large h-15 row-center">
             <p>Your name is &nbsp;</p>
-            <div class="f-largeAll text-input">
-                <!--<ValidationMessage For="() => Player.Name"></ValidationMessage>-->
-                <InputText tabindex="1" placeholder="type here..."
-                           @bind-Value=@Player.Name @ref="nameInput"></InputText>
-            </div>
+            <input class="text-input f-large" tabindex="1" placeholder="type here..."
+                @ref="nameInput" @bind-value="name"></input>
             @{
-                enteredName = enteredTagline = !String.IsNullOrWhiteSpace(Player.Name);
+                enteredName = enteredTagline = !String.IsNullOrWhiteSpace(name);
             }
         </div>
         @if (enteredName)
@@ -32,13 +27,10 @@
 
             <div class="f-medium h-20 row-center">
                 <p>You want people to call you the &nbsp</p>
-                <div class="f-mediumAll text-input">
-                    <!--<ValidationMessage For="() => Player.Tagline"></ValidationMessage>-->
-                    <InputText tabindex="2" placeholder="type here..."
-                               @bind-Value=@Player.Tagline @ref="taglineInput"></InputText>
-                </div>
+                <input class="text-input f-medium" tabindex="2" placeholder="type here..."
+                    @ref="taglineInput" @bind-value="tagline"></input>
                 @{
-                    enteredTagline = !String.IsNullOrWhiteSpace(Player.Tagline);
+                    enteredTagline = !String.IsNullOrWhiteSpace(tagline);
                 }
             </div>
         }
@@ -58,7 +50,7 @@
                 </div>
             </div>
         }
-    </EditForm>
+    </form>
 }
 else
 {
@@ -68,12 +60,14 @@ else
 }
 
 @code {
-    private Character Player = new Character();
+    private Stats playerStats;
+    private Move[] playerMoves;
 
-    private InputText nameInput;
-    private InputText taglineInput;
+    private ElementReference nameInput;
+    private ElementReference taglineInput;
+    private string? name;
+    private string? tagline;
 
-    private EditContext? editContext { get; set; }
     private bool pressedStart = false;
     private bool enteredName = false;
     private bool enteredTagline = false;
@@ -92,18 +86,11 @@ else
         {
             if (!enteredName)
             {
-                editContext?.Validate();
-                if (nameInput.Element.HasValue)
-                {
-                    await nameInput.Element.Value.FocusAsync();
-                }
+                await nameInput.FocusAsync();
             }
             else if (!enteredTagline)
             {
-                if (taglineInput.Element.HasValue)
-                {
-                    await taglineInput.Element.Value.FocusAsync();
-                }
+                await taglineInput.FocusAsync();
             }
         }
     }
@@ -116,32 +103,32 @@ else
 
     public void SetBalancedBuild()
     {
-        Player.SetStats(100, 70, 60, 70, 70);
-        Player.Moves = [Move.Punch, Move.SwordSlash, Move.GroundSlam, Move.Counter];
+        playerStats = new(100, 70, 60, 70, 70);
+        playerMoves = [Move.Punch, Move.SwordSlash, Move.GroundSlam, Move.Counter];
         choseBuild = true;
         build = "bal";
     }
 
     public void SetAgileBuild()
     {
-        Player.SetStats(100, 90, 50, 50, 70);
-        Player.Moves = [Move.Punch, Move.CrushingGrip, Move.JumpKick, Move.Counter];
+        playerStats = new(100, 90, 50, 50, 70);
+        playerMoves = [Move.Punch, Move.CrushingGrip, Move.JumpKick, Move.Counter];
         choseBuild = true;
         build = "agi";
     }
 
     public void SetTankyBuild()
     {
-        Player.SetStats(100, 40, 90, 100, 40);
-        Player.Moves = [Move.Punch, Move.CrushingGrip, Move.AxeSwing, Move.Counter];
+        playerStats = new(100, 40, 90, 100, 40);
+        playerMoves = [Move.Punch, Move.CrushingGrip, Move.AxeSwing, Move.Counter];
         choseBuild = true;
         build = "tnk";
     }
 
     public void SetWizardBuild()
     {
-        Player.SetStats(100, 50, 50, 100, 100);
-        Player.Moves = [Move.IceSpike, Move.FlameImplosion, Move.CursedExcalibur, Move.RedirectLightning];
+        playerStats = new(100, 50, 50, 100, 100);
+        playerMoves = [Move.IceSpike, Move.FlameImplosion, Move.CursedExcalibur, Move.RedirectLightning];
         choseBuild = true;
         build = "wiz";
     }
@@ -150,7 +137,12 @@ else
     {
         if (enteredName && enteredTagline && choseBuild)
         {
-            Game.InitializeNewGame(Player);
+            Character player = new Character(playerStats, playerMoves)
+                {
+                    Name = name,
+                    Tagline = tagline,
+                };
+            Game.InitializeNewGame(player);
             Navigation.NavigateTo("/battle");
         }
     }

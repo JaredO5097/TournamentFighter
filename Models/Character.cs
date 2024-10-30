@@ -22,7 +22,7 @@ namespace TournamentFighter.Models
         public string VictoryLineLowHP { get; set; } = "";
         public string DefeatDialogue { get; set; } = "";
 
-        public Move[] Moves = [Move.None];
+        public readonly Move[] Moves = [Move.None];
 
         private readonly Queue<Move> Actions = new Queue<Move>();
 
@@ -30,44 +30,25 @@ namespace TournamentFighter.Models
         private int TurnsUntilStatusExpire = 0;
 
         // Health + Agility + Defense + Strength + Accuracy = 350
-        public int Health { get; set; }
-        private int initHealth;
-        public int Agility { get; set; }
-        private int initAgility;
-        public int Defense { get; set; }
-        private int initDefense;
-        public int Strength { get; set; }
-        private int initStrength;
-        public int Accuracy { get; set; }
-        private int initAccuracy;
+        private MutableStats _actual = new MutableStats();
+        private readonly Stats _init;
+
+        public int Health => _actual.Health;
+        public int Agility => _init.Agility;
 
         private const int SKILL_CAP = 100;
         private readonly static Random _rng = new Random();
 
-        public Character()
+        public Character(Stats stats, Move[] moves)
         {
-
-        }
-
-        public Character(int health, int agility, int defense, int strength, int accuracy)
-        {
-
-        }
-
-        public void SetStats(int health, int agility, int defense, int strength, int accuracy)
-        {
-            Health = initHealth = Math.Clamp(health, 1, SKILL_CAP);
-            Agility = initAgility = Math.Clamp(agility, 1, SKILL_CAP);
-            Defense = initDefense = Math.Clamp(defense, 1, SKILL_CAP);
-            Strength = initStrength = Math.Clamp(strength, 1, SKILL_CAP);
-            Accuracy = initAccuracy = Math.Clamp(accuracy, 1, SKILL_CAP);
+            _init = stats;
+            _actual.SetAll(_init);
+            Moves = moves;
         }
 
         public void Refresh()
         {
-            Health = initHealth; Agility = initAgility; Defense = initDefense;
-            Strength = initStrength; Accuracy = initAccuracy;
-
+            _actual.SetAll(_init);
             Actions.Clear();
             CurrentStatus = Status.None;
             TurnsUntilStatusExpire = 0;
@@ -77,7 +58,7 @@ namespace TournamentFighter.Models
         {
             if (CurrentStatus == Status.Bleed)
             {
-                Health -= 10;
+                _actual.Health -= 10;
                 tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some blood...", Move.None));
             }
             TurnsUntilStatusExpire--;
@@ -88,11 +69,11 @@ namespace TournamentFighter.Models
                     tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " stopped bleeding!", Move.None));
                 } else if (CurrentStatus == Status.Burn)
                 {
-                    Strength += 15;
+                    _actual.Strength += 15;
                     tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " got their strength back!", Move.None));
                 } else if (CurrentStatus == Status.Immobile)
                 {
-                    Agility += 15;
+                    _actual.Agility += 15;
                     tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " is moving faster!", Move.None));
                 }
                 CurrentStatus = Status.None;
@@ -116,12 +97,12 @@ namespace TournamentFighter.Models
                 }
                 else if (status == Status.Burn)
                 {
-                    Strength -= 15;
+                    _actual.Strength -= 15;
                     tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some strength...", Move.None));
                 }
                 else if (status == Status.Immobile)
                 {
-                    Agility -= 15;
+                    _actual.Agility -= 15;
                     tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " is moving slower...", Move.None));
                 }
             }
@@ -131,24 +112,24 @@ namespace TournamentFighter.Models
         public int TakeAttack(int incomingDamage, Move move, MsgTracker tracker)
         {
             int actualDamage = 0;
-            if (_rng.Next(1, SKILL_CAP + 1) > (int)Math.Ceiling(0.15f * Agility)) // did not evade
+            if (_rng.Next(1, SKILL_CAP + 1) > (int)Math.Ceiling(0.15f * _actual.Agility)) // did not evade
             {
-                actualDamage = incomingDamage - (int)(0.75f * Defense);
+                actualDamage = incomingDamage - (int)(0.75f * _actual.Defense);
                 if (actualDamage < 0) { actualDamage = 0; }
             }
-            Health -= actualDamage;
+            _actual.Health -= actualDamage;
             return actualDamage;
         }
 
         public int AttackWith(Move move)
         {
-            int res = move.BaseAccuracy + ((Accuracy * Accuracy / 10000) * (100 - move.BaseAccuracy));
+            int res = move.BaseAccuracy + ((_actual.Accuracy * _actual.Accuracy / 10000) * (100 - move.BaseAccuracy));
             // res is the result of using the character's accuracy to increase the move's base accuracy
             // The closer the character's accuracy is to SKILL_CAP, or 100, the more significant this increase is
             // res = moveAccuracy + (((charAccuracy^2)/(100^2))(100 - moveAccuracy))
             if (_rng.Next(1, SKILL_CAP + 1) <= res)
             {
-                return move.BaseDamage + (int)(0.10f * Strength);
+                return move.BaseDamage + (int)(0.10f * _actual.Strength);
             } else
             {
                 return 0;
@@ -158,10 +139,10 @@ namespace TournamentFighter.Models
 
         public string GetVictoryLine()
         {
-            if (Health >= 0.7 * initHealth)
+            if (Health >= 0.7 * _init.Health)
             {
                 return VictoryLineHighHP;
-            } else if (Health <= 0.15 * initHealth)
+            } else if (Health <= 0.25 * _init.Health)
             {
                 return VictoryLineLowHP;
             } else
