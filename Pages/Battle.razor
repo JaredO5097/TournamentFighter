@@ -24,7 +24,7 @@
         <p>&nbsp;@Player.Health ♥ </p>
         @if (Player.CurrentStatus != Status.None)
         {
-            <p>&nbsp;(@Player.CurrentStatus.ToString())</p>
+            <p class="@StatusClasses[Player.CurrentStatus]">&nbsp;(@Player.CurrentStatus.ToString())</p>
         }
     </div>
     <div class="row-center h-80 full-w">
@@ -56,7 +56,7 @@
                 <button class="btn-gold f-xsmall" @onclick="NextMatch">Next Match</button>
             } else if (CurrentMsg.Type == MessageType.NewChampion)
             {
-                <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">Create New Character</button>
+                <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">New Character</button>
             } else
             {
                 <button class="btn-gold f-xxsmall" @onclick="ProgressGame" disabled="@(!readyForNext)">Next</button>
@@ -92,7 +92,7 @@
         <p>&nbsp;@Opponent.Health ♥</p>
         @if (Opponent.CurrentStatus != Status.None)
         {
-            <p>&nbsp;(@Opponent.CurrentStatus.ToString())</p>
+            <p class="@StatusClasses[Opponent.CurrentStatus]">&nbsp;(@Opponent.CurrentStatus.ToString())</p>
         }
     </div>
 </div>
@@ -114,7 +114,10 @@
     private MessageModel CurrentMsg = MessageModel.Empty;
     private StringBuilder baseMsg = new StringBuilder();
     private StringBuilder dynamicMsg = new StringBuilder();
+
     private string msgStyle = "";
+    private string playerStatusStyle = "";
+    private string opponentStatusStyle = "";
 
     private string chosenMove = "";
     private bool readyForNext = true;
@@ -152,14 +155,21 @@
         {Move.RedirectLightning, "media/thunder1.wav" },
     };
 
-    private readonly FrozenDictionary<string, string> CharacterFonts = new Dictionary<string, string>()
+    private readonly Dictionary<string, string> CharacterFonts = new()
     {
         {"Ryalt", "ErasMedium" },
         {"Dejourn", "RockwellConBold" },
         {"Hina", "LucidaHandItalic" },
         {"Grizwald", "VinerHandRegular" },
         {"Number 5", "Pixellari" },
-    }.ToFrozenDictionary();
+    };
+
+    private readonly Dictionary<Status, string> StatusClasses = new()
+    {
+        {Status.Bleed, "" },
+        {Status.Burn, "burn" },
+        {Status.Immobile, "" },
+    };
 
     protected override void OnInitialized()
     {
@@ -284,6 +294,20 @@
         CurrentTheme = @<style>
                                 body {
                                     background-color: lightpink;
+                                }
+                                .stats, .s-opponent {
+                                    font-family: "InkFreeRegular";
+                                    text-decoration: underline wavy white;
+                                }
+                                .dialogue {
+                                    font-family: "KristenRegular";
+                                }
+                                .btn-radio {
+                                    border: 2px solid darkviolet;
+                                }
+                                .btn-gold {
+                                    background: linear-gradient(270deg, yellow, deepskyblue);
+                                    background-size: 400% 400%;
                                 }
                         </style>;
     }

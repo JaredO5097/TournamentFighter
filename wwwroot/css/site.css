@@ -1,14 +1,11 @@
-@font-face { font-family: "JejuHallasan"; src: url("../fonts/JejuHallasan-Regular.ttf"); }
 @font-face { font-family: "JetBrainsMono"; src: url("../fonts/JetBrainsMono-Regular.ttf"); }
-@font-face { font-family: "SegoeUI"; font-weight: normal; src: url("../fonts/segoeui.ttf"); }
-@font-face { font-family: "SegoeUI"; font-weight: 600; src: url("../fonts/seguisb.ttf"); }
-@font-face { font-family: "SegoeUI"; font-weight: bold; src: url("../fonts/segoeuib.ttf"); }
+@font-face { font-family: "Pixellari"; src: url("../fonts/Pixellari.ttf"); }
 @font-face { font-family: "ErasMedium"; src: url("../fonts/ERASMD.TTF"); }
 @font-face { font-family: "RockwellConBold"; src: url("../fonts/ROCCB___.TTF"); }
 @font-face { font-family: "LucidaHandItalic"; src: url("../fonts/LHANDW.TTF"); }
 @font-face { font-family: "VinerHandRegular"; src: url("../fonts/VINERITC.TTF"); }
-@font-face { font-family: "Pixellari"; src: url("../fonts/Pixellari.ttf"); }
-@font-face { font-family: "BahnLightCond"; src: url("../fonts/BAHNSCHRIFT.TTF"); }
+@font-face { font-family: "KristenRegular"; src: url("../fonts/ITCKRIST.TTF"); }
+@font-face { font-family: "InkFreeRegular"; src: url("../fonts/INKFREE.TTF"); }
 
 * {
     box-sizing: border-box;
@@ -153,11 +150,11 @@ body { background-color: aliceblue; }
 .stats {
     font-family: "ErasMedium";
     text-align: center;
-    color: darkblue;
+    text-decoration: underline solid darkblue;
 }
 
 .s-opponent {
-    color: orangered;
+    text-decoration: underline solid orangered;
 }
 
 .dialogue {
@@ -169,6 +166,30 @@ body { background-color: aliceblue; }
     font-family: JetBrainsMono;
     background-color: aliceblue;
     border: medium solid black;
+}
+
+@keyframes Burn {
+    0% {
+        text-shadow: 0 0 0 #fefcc9, 
+            -2px 10px 10px #ec8e00, 
+            2px -10px 10px #e33500, 
+            -2px -15px 15px red, 
+            -2px -20px 20px #973716, 
+            0 -25px 25px #451b0e;
+    }
+
+    100% {
+        text-shadow: 0 0 0 #fefcc9, 
+            -3px 10px 10px #feec85, 
+            3px -12px 10px #ec8e00, 
+            -3px -17px 15px #e33500, 
+            -2px -22px 20px red, 
+            0 -25px 25px #973716;
+    }
+}
+
+.burn {
+    animation: Burn 1s ease-in-out infinite alternate;
 }
 
 #start-btn {
