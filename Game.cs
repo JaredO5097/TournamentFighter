@@ -10,6 +10,7 @@ namespace TournamentFighter
         PlayerTurn,
         PlayerInput,
         OpponentTurn,
+        Damage,
         OpponentDialogue,
         PlayerVictory,
         OpponentVictory,
@@ -34,9 +35,14 @@ namespace TournamentFighter
         }
     }
 
-    public readonly record struct MessageModel(MessageType Type, string Message, Move Move)
+    public readonly record struct MoveInfo(Move Move, int DamageDealt)
     {
-        public static readonly MessageModel Empty = new(MessageType.Empty, "", Move.None);
+        public static readonly MoveInfo Empty = new(Move.None, 0);
+    }
+
+    public readonly record struct MessageModel(MessageType Type, string Message, MoveInfo MoveInfo)
+    {
+        public static readonly MessageModel Empty = new(MessageType.Empty, "", MoveInfo.Empty);
     }
 
     public class MsgTracker : Queue<MessageModel> { }
@@ -81,20 +87,20 @@ namespace TournamentFighter
             {
                 tracker.Enqueue(new(MessageType.Game, "Welcome ladies and gentlemen, to the annual IRONMAN tournament!\n" +
                     "It's a bright sunny day here, and we've got some great fighters for you this year!\n" +
-                    "Here comes our first one, " + Player.Name + "! They look like they're here to win!", Move.None));
+                    "Here comes our first one, " + Player.Name + "! They look like they're here to win!", MoveInfo.Empty));
             }
             else if (MatchNumber == 2)
             {
                 tracker.Enqueue(new(MessageType.Game, Player.Name + " has moved on to the second round!\n" +
-                    "But can they keep up their momentum??", Move.None));
+                    "But can they keep up their momentum??", MoveInfo.Empty));
             }
             else if (MatchNumber == 3)
             {
                 tracker.Enqueue(new(MessageType.Game, "This is it, it's the final round! If " + Player.Name +
-                    " wins this, they'll be crowned our new champion!", Move.None));
+                    " wins this, they'll be crowned our new champion!", MoveInfo.Empty));
             }
 
-            tracker.Enqueue(new(MessageType.Game, "And here's their opponent. " + Opponent.Description, Move.None));
+            tracker.Enqueue(new(MessageType.Game, "And here's their opponent. " + Opponent.Description, MoveInfo.Empty));
         }
 
         public void InitializeNewGame(Character playerModel)
@@ -136,7 +142,7 @@ namespace TournamentFighter
 
                 if (!Player.HasActions)
                 {
-                    tracker.Enqueue(new(MessageType.PlayerInput, "What will " + Player.Name + " do next??", Move.None)); 
+                    tracker.Enqueue(new(MessageType.PlayerInput, "What will " + Player.Name + " do next??", MoveInfo.Empty)); 
                 } else
                 {
                     TakeTurn(Player, Opponent, MessageType.PlayerTurn, Player.NextAction(), tracker);
@@ -166,21 +172,21 @@ namespace TournamentFighter
         {
             if (type == MessageType.PlayerTurn) // player won
             {
-                tracker.Enqueue(new(MessageType.Game, "WHOA, " + target.Name + " is on the ground! Looks like they have something to say.", Move.None));
-                tracker.Enqueue(new(MessageType.OpponentDialogue, target.DefeatDialogue, Move.None));
+                tracker.Enqueue(new(MessageType.Game, "WHOA, " + target.Name + " is on the ground! Looks like they have something to say.", MoveInfo.Empty));
+                tracker.Enqueue(new(MessageType.OpponentDialogue, target.DefeatDialogue, MoveInfo.Empty));
                 if (MatchNumber == MAX_MATCHES)
                 {
                     tracker.Enqueue(new(MessageType.NewChampion, victor.Name + " is our new IRONMAN tournament champion!" +
-                        " Well done " + victor.Name + "!", Move.None));
+                        " Well done " + victor.Name + "!", MoveInfo.Empty));
                 } else
                 {
-                    tracker.Enqueue(new(MessageType.PlayerVictory, victor.Name + " wins! That's the end of this match, wow that was exciting!", Move.None));
+                    tracker.Enqueue(new(MessageType.PlayerVictory, victor.Name + " wins! That's the end of this match, wow that was exciting!", MoveInfo.Empty));
                 }
             } else if (type == MessageType.OpponentTurn) // opponent won
             {
-                tracker.Enqueue(new(MessageType.Game, "WHOA, " + target.Name + " is on the ground. That was the finishing blow!", Move.None));
-                tracker.Enqueue(new(MessageType.OpponentDialogue, victor.GetVictoryLine(), Move.None));
-                tracker.Enqueue(new(MessageType.OpponentVictory, victor.Name + " wins! That's the end of this match, wow that was exciting!", Move.None));
+                tracker.Enqueue(new(MessageType.Game, "WHOA, " + target.Name + " is on the ground. That was the finishing blow!", MoveInfo.Empty));
+                tracker.Enqueue(new(MessageType.OpponentDialogue, victor.GetVictoryLine(), MoveInfo.Empty));
+                tracker.Enqueue(new(MessageType.OpponentVictory, victor.Name + " wins! That's the end of this match, wow that was exciting!", MoveInfo.Empty));
             }
         }
 
@@ -188,7 +194,7 @@ namespace TournamentFighter
         {
             if (move == Move.None)
             {
-                tracker.Enqueue(new(type, actor.Name + " isn't doing anything? Interesting...", Move.None));
+                tracker.Enqueue(new(type, actor.Name + " isn't doing anything? Interesting...", MoveInfo.Empty));
             } else
             {
                 actor.UpdateStatus(tracker);
@@ -200,7 +206,7 @@ namespace TournamentFighter
                 {
                     int attack = actor.AttackWith(move);
                     int damage = target.TakeAttack(attack, move, tracker);
-                    tracker.Enqueue(new(type, actor.Name + " " + move.Messages[0], move));
+                    tracker.Enqueue(new(type, actor.Name + " " + move.Messages[0], new(move, damage)));
 
                     if (target.Health <= 0)
                     {
@@ -208,7 +214,7 @@ namespace TournamentFighter
                     }
                     else
                     {
-                        tracker.Enqueue(new(type, target.Name + " " + GetDmgMsg(damage), Move.None));
+                        tracker.Enqueue(new(type, target.Name + " " + GetDmgMsg(damage), MoveInfo.Empty));
                         if (damage > 0 && move.Status != Status.None)
                         {
                             target.AddStatus(move.Status, tracker);

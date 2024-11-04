@@ -59,22 +59,22 @@ namespace TournamentFighter.Models
             if (CurrentStatus == Status.Bleed)
             {
                 _actual.Health -= 10;
-                tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some blood...", Move.None));
+                tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some blood...", MoveInfo.Empty));
             }
             TurnsUntilStatusExpire--;
             if (TurnsUntilStatusExpire == 0)
             {
                 if (CurrentStatus == Status.Bleed)
                 {
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " stopped bleeding!", Move.None));
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " stopped bleeding!", MoveInfo.Empty));
                 } else if (CurrentStatus == Status.Burn)
                 {
                     _actual.Strength += 15;
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " got their strength back!", Move.None));
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " got their strength back!", MoveInfo.Empty));
                 } else if (CurrentStatus == Status.Immobile)
                 {
                     _actual.Agility += 15;
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " is moving faster!", Move.None));
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " is moving faster!", MoveInfo.Empty));
                 }
                 CurrentStatus = Status.None;
             }
@@ -93,17 +93,17 @@ namespace TournamentFighter.Models
                 CurrentStatus = status;
                 if (status == Status.Bleed)
                 {
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " started to bleed...", Move.None));
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " started to bleed...", MoveInfo.Empty));
                 }
                 else if (status == Status.Burn)
                 {
                     _actual.Strength -= 15;
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some strength...", Move.None));
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some strength...", MoveInfo.Empty));
                 }
                 else if (status == Status.Immobile)
                 {
                     _actual.Agility -= 15;
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " is moving slower...", Move.None));
+                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " is moving slower...", MoveInfo.Empty));
                 }
             }
             TurnsUntilStatusExpire = 2;

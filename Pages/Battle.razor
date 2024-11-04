@@ -20,11 +20,12 @@
 
 <div class="battle full-h col-start">
     <div class="stats f-xxsmall row-center h-10">
-        <p>@Player.Name the @Player.Tagline</p>
-        <p>&nbsp;@Player.Health ♥ </p>
+        <p class="u-player">@Player.Name the @Player.Tagline</p>
+        <p class="u-player">&nbsp;@Player.Health ♥ </p>
+        <p>&nbsp;</p>
         @if (Player.CurrentStatus != Status.None)
         {
-            <p class="@StatusClasses[Player.CurrentStatus]">&nbsp;(@Player.CurrentStatus.ToString())</p>
+            <p class="@StatusClasses[Player.CurrentStatus]">@Player.CurrentStatus.ToString()</p>
         }
     </div>
     <div class="row-center h-80 full-w">
@@ -87,12 +88,13 @@
             }
         </div>
     </div>
-    <div class="stats f-xxsmall s-opponent row-end full-w h-10">
-        <p>@Opponent.Name the @Opponent.Tagline</p>
-        <p>&nbsp;@Opponent.Health ♥</p>
+    <div class="stats f-xxsmall row-end full-w h-10">
+        <p class="u-opponent">@Opponent.Name the @Opponent.Tagline</p>
+        <p class="u-opponent">&nbsp;@Opponent.Health ♥</p>
+        <p>&nbsp;</p>
         @if (Opponent.CurrentStatus != Status.None)
         {
-            <p class="@StatusClasses[Opponent.CurrentStatus]">&nbsp;(@Opponent.CurrentStatus.ToString())</p>
+            <p class="@StatusClasses[Opponent.CurrentStatus]">@Opponent.CurrentStatus.ToString()</p>
         }
     </div>
 </div>
@@ -166,9 +168,10 @@
 
     private readonly Dictionary<Status, string> StatusClasses = new()
     {
-        {Status.Bleed, "" },
+        {Status.None, "" },
+        {Status.Bleed, "bleed" },
         {Status.Burn, "burn" },
-        {Status.Immobile, "" },
+        {Status.Immobile, "immobile" },
     };
 
     protected override void OnInitialized()
@@ -217,9 +220,10 @@
             msgStyle = "font-family: " + CharacterFonts[Opponent.Name];
         }
 
-        if (MoveSounds.ContainsKey(CurrentMsg.Move))
+        Move move = CurrentMsg.MoveInfo.Move;
+        if (MoveSounds.ContainsKey(move))
         {
-            moveAudioSrc = MoveSounds[CurrentMsg.Move];
+            moveAudioSrc = MoveSounds[move];
             playingMoveAudio = true;
         }
     }
@@ -295,8 +299,10 @@
                                 body {
                                     background-color: lightpink;
                                 }
-                                .stats, .s-opponent {
+                                .stats {
                                     font-family: "InkFreeRegular";
+                                }
+                                .u-player, .u-opponent {
                                     text-decoration: underline wavy white;
                                 }
                                 .dialogue {
