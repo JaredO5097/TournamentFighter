@@ -30,13 +30,14 @@
     </div>
     <div class="row-center h-80 full-w">
         <div class="row-start h-30 w-70">
-            @if (CurrentMsg != MessageModel.Empty)
+            @if (CurrentMsg.Type != MsgType.Empty)
             {
-                <p class="dialogue f-small" style=@msgStyle>@dynamicMsg</p>
+                <p class="dialogue f-small full-w" style=@msgStyle>@dynamicMsg</p>
+                <p id="damage-num" class="f-xsmall" style=@damageStyle>@damageMsg</p>
             }
         </div>
         <div class="col-center full-h w-15">
-            @if (CurrentMsg != MessageModel.Empty && CurrentMsg.Type == MessageType.PlayerInput)
+            @if (CurrentMsg.Type == MsgType.PlayerInput)
             {
                 <div class="col">
                     @foreach (Move move in Player.Moves)
@@ -46,16 +47,16 @@
                     }
                 </div>
             }
-            @if (CurrentMsg.Type == MessageType.OpponentVictory)
+            @if (CurrentMsg.Type == MsgType.OpponentVictory)
             {
                 readyForNext = false;
                 <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">New Character</button>
                 <button class="btn-gold f-xsmall" @onclick="TryAgain">Try Again</button>
-            } else if (CurrentMsg.Type == MessageType.PlayerVictory)
+            } else if (CurrentMsg.Type == MsgType.PlayerVictory)
             {
                 readyForNext = false;
                 <button class="btn-gold f-xsmall" @onclick="NextMatch">Next Match</button>
-            } else if (CurrentMsg.Type == MessageType.NewChampion)
+            } else if (CurrentMsg.Type == MsgType.NewChampion)
             {
                 <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">New Character</button>
             } else
@@ -113,11 +114,13 @@
     private string themeStr = "default";
 
     private MsgTracker MessageTracker = new MsgTracker();
-    private MessageModel CurrentMsg = MessageModel.Empty;
+    private Msg CurrentMsg = new(MsgType.Empty, "");
     private StringBuilder baseMsg = new StringBuilder();
     private StringBuilder dynamicMsg = new StringBuilder();
+    private StringBuilder damageMsg = new StringBuilder();
 
     private string msgStyle = "";
+    private string damageStyle = "";
     private string playerStatusStyle = "";
     private string opponentStatusStyle = "";
 
@@ -191,14 +194,20 @@
         ProgressGame();
     }
 
-    private async void ProgressGame()
+    private void Reset()
     {
         _ts.Cancel();
-
         msgStyle = "";
+        damageStyle = "";
         chosenMove = "";
         baseMsg.Clear();
         dynamicMsg.Clear();
+        damageMsg.Clear();
+    }
+
+    private async void ProgressGame()
+    {
+        Reset();
 
         if (MessageTracker.Count == 0)
         {
@@ -210,22 +219,30 @@
         dynamicMsg.Append(' ', baseMsg.Length);
         _ts = new CancellationTokenSource();
         CancellationToken ct = _ts.Token;
-        Task.Run(() => TypeOutMsg(ct));
 
-        if (CurrentMsg.Type == MessageType.PlayerInput)
+        MsgType type = CurrentMsg.Type;
+        bool displayDamage = false;
+        if (type == MsgType.PlayerInput)
         {
             readyForNext = false;
-        } else if (CurrentMsg.Type == MessageType.OpponentDialogue && CharacterFonts.ContainsKey(Opponent.Name))
+        } else if (type == MsgType.OpponentDialogue && CharacterFonts.ContainsKey(Opponent.Name))
         {
             msgStyle = "font-family: " + CharacterFonts[Opponent.Name];
+        } else if (type == MsgType.Move)
+        {
+            moveAudioSrc = MoveSounds[CurrentMsg.Data!.Value.Move];
+            playingMoveAudio = true;
+        } else if (type == MsgType.Damage)
+        {
+            MsgPckg data = CurrentMsg.Data!.Value;
+            if (data.DamageDealt > 0)
+            {
+                damageMsg.Append("-" + data.DamageDealt + " HP");
+                displayDamage = true;
+            }
         }
 
-        Move move = CurrentMsg.MoveInfo.Move;
-        if (MoveSounds.ContainsKey(move))
-        {
-            moveAudioSrc = MoveSounds[move];
-            playingMoveAudio = true;
-        }
+        Task.Run(() => TypeOutMsg(ct, displayDamage));
     }
 
     private void RecordMove(Move move)
@@ -252,7 +269,7 @@
         Navigation.Refresh();
     }
 
-    private async void TypeOutMsg(CancellationToken ct)
+    private async void TypeOutMsg(CancellationToken ct, bool showDamage = false)
     {
         for (int i = 0; i < baseMsg.Length; i++)
         {
@@ -269,6 +286,12 @@
             {
                 await Task.Delay(15);
             }
+            await InvokeAsync(StateHasChanged);
+        }
+
+        if (showDamage)
+        {
+            damageStyle = "display: block";
             await InvokeAsync(StateHasChanged);
         }
     }

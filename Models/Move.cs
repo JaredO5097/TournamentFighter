@@ -3,7 +3,7 @@
     public readonly record struct Move(string Name, string[] Messages, int BaseDamage, int BaseAccuracy, int Priority, 
         Status Status = Status.None)
     {
-        public static readonly Move None = new("None", ["nothing"], 0, 0, Priority: 0);
+        public static readonly Move None = new("None", ["isn't doing anything? Interesting..."], 0, 0, Priority: 0);
         public static readonly Move Dodge = new("Dodge", ["dodged just in time!"], 0, 100, Priority: 1);
 
         public static readonly Move LongShot = new("Long Shot", ["fired an arrow from afar!"], 90, 95, Priority: 0, Status.Bleed);

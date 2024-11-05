@@ -216,6 +216,15 @@ body { background-color: aliceblue; }
     }
 }
 
+@keyframes Damage {
+    0% {
+        transform: translateX(0) translateY(0);
+    }
+    100% {
+        transform: translateX(-0.5rem) translateX(-0.6rem);
+    }
+}
+
 .bleed {
     animation: Bleed 2s linear infinite;
     text-decoration: solid underline red;
@@ -229,6 +238,14 @@ body { background-color: aliceblue; }
 .immobile {
     animation: Immobile 1.5s ease-out infinite;
     text-decoration: none;
+}
+
+#damage-num {
+    display: none;
+    position: relative;
+    top: 50px;
+    width: 3rem;
+    /*animation: Damage 1s ease-out;*/
 }
 
 #start-btn {

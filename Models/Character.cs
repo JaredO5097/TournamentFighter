@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Random = System.Random;
+using System.ComponentModel;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TournamentFighter.Models
 {
@@ -59,22 +61,22 @@ namespace TournamentFighter.Models
             if (CurrentStatus == Status.Bleed)
             {
                 _actual.Health -= 10;
-                tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some blood...", MoveInfo.Empty));
+                tracker.Enqueue(new(MsgType.Game, "Looks like " + Name + " lost some blood..."));
             }
             TurnsUntilStatusExpire--;
             if (TurnsUntilStatusExpire == 0)
             {
                 if (CurrentStatus == Status.Bleed)
                 {
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " stopped bleeding!", MoveInfo.Empty));
+                    tracker.Enqueue(new(MsgType.Game, "Looks like " + Name + " stopped bleeding!"));
                 } else if (CurrentStatus == Status.Burn)
                 {
                     _actual.Strength += 15;
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " got their strength back!", MoveInfo.Empty));
+                    tracker.Enqueue(new(MsgType.Game, "Looks like " + Name + " got their strength back!"));
                 } else if (CurrentStatus == Status.Immobile)
                 {
                     _actual.Agility += 15;
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " is moving faster!", MoveInfo.Empty));
+                    tracker.Enqueue(new(MsgType.Game, "Looks like " + Name + " is moving faster!"));
                 }
                 CurrentStatus = Status.None;
             }
@@ -93,17 +95,17 @@ namespace TournamentFighter.Models
                 CurrentStatus = status;
                 if (status == Status.Bleed)
                 {
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " started to bleed...", MoveInfo.Empty));
+                    tracker.Enqueue(new(MsgType.Game, "Looks like " + Name + " started to bleed..."));
                 }
                 else if (status == Status.Burn)
                 {
                     _actual.Strength -= 15;
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " lost some strength...", MoveInfo.Empty));
+                    tracker.Enqueue(new(MsgType.Game, "Looks like " + Name + " lost some strength..."));
                 }
                 else if (status == Status.Immobile)
                 {
                     _actual.Agility -= 15;
-                    tracker.Enqueue(new(MessageType.Game, "Looks like " + Name + " is moving slower...", MoveInfo.Empty));
+                    tracker.Enqueue(new(MsgType.Game, "Looks like " + Name + " is moving slower..."));
                 }
             }
             TurnsUntilStatusExpire = 2;
@@ -111,6 +113,8 @@ namespace TournamentFighter.Models
 
         public int TakeAttack(int incomingDamage, Move move, MsgTracker tracker)
         {
+            if (incomingDamage <= 0) { return 0; }
+
             int actualDamage = 0;
             if (_rng.Next(1, SKILL_CAP + 1) > (int)Math.Ceiling(0.15f * _actual.Agility)) // did not evade
             {
@@ -118,23 +122,26 @@ namespace TournamentFighter.Models
                 if (actualDamage < 0) { actualDamage = 0; }
             }
             _actual.Health -= actualDamage;
+            if (_actual.Health <= 0) { return actualDamage; }
+
+            tracker.AddDamage(Name + " " + GetDmgMsg(actualDamage), actualDamage);
+            if (actualDamage > 0 && move.Status != Status.None)
+            {
+                AddStatus(move.Status, tracker);
+            }
+
             return actualDamage;
         }
 
-        public int AttackWith(Move move)
+        public int AttackWith(Move move, MsgTracker tracker)
         {
-            int res = move.BaseAccuracy + ((_actual.Accuracy * _actual.Accuracy / 10000) * (100 - move.BaseAccuracy));
-            // res is the result of using the character's accuracy to increase the move's base accuracy
-            // The closer the character's accuracy is to SKILL_CAP, or 100, the more significant this increase is
-            // res = moveAccuracy + (((charAccuracy^2)/(100^2))(100 - moveAccuracy))
-            if (_rng.Next(1, SKILL_CAP + 1) <= res)
-            {
-                return move.BaseDamage + (int)(0.10f * _actual.Strength);
-            } else
-            {
-                return 0;
-            }
+            if (move.BaseDamage <= 0) { tracker.AddGame(Name + " " + move.Messages[0]); return 0; }
+            tracker.AddMove(Name + " " + move.Messages[0], move);
 
+            int ceil = move.BaseAccuracy + ((_actual.Accuracy * _actual.Accuracy / (SKILL_CAP*SKILL_CAP)) * (SKILL_CAP - move.BaseAccuracy));
+            // The closer the character's accuracy is to SKILL_CAP, 100, the higher ceil is
+            // ceil = moveAccuracy + (((charAccuracy^2)/(100^2))(100 - moveAccuracy))
+            return _rng.Next(1, SKILL_CAP + 1) <= ceil ? move.BaseDamage + (int)(0.10f * _actual.Strength) : 0;
         }
 
         public string GetVictoryLine()
@@ -150,6 +157,16 @@ namespace TournamentFighter.Models
                 return VictoryLineMediumHP;
             }
         }
+
+        private static string GetDmgMsg(int damage) => damage switch
+        {
+            > 60 => "took a lethal blow!",
+            > 40 => "must've felt that!",
+            > 20 => "took some damage there!",
+            > 10 => "might've felt that!",
+            0 => "wasn't touched!",
+            _ => "took a hit!"
+        };
 
         public void QueueRandomMove()
         {
