@@ -58,6 +58,10 @@
                 <button class="btn-gold f-xsmall" @onclick="NextMatch">Next Match</button>
             } else if (CurrentMsg.Type == MsgType.NewChampion)
             {
+                playingBgm = false;
+                msgTimerDelayScale = 2.75f;
+
+                <audio id="fanfare" autoplay src="media/fanfare1.mp3"></audio>
                 <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">New Character</button>
             } else
             {
@@ -107,6 +111,7 @@
     private static Timer _menuTimer = new Timer();
     private static Task? _typeOutMsg;
     private CancellationTokenSource _ts = new CancellationTokenSource();
+    private float msgTimerDelayScale = 1f;
 
     private static readonly Random _rng = new();
 
@@ -278,13 +283,13 @@
             dynamicMsg[i] = baseMsg[i];
             if (dynamicMsg[i] == ' ')
             {
-                await Task.Delay(35);
+                await Task.Delay((int)(35 * msgTimerDelayScale));
             } else if (dynamicMsg[i] == '\n')
             {
-                await Task.Delay(105);
+                await Task.Delay((int)(105 * msgTimerDelayScale));
             } else
             {
-                await Task.Delay(15);
+                await Task.Delay((int)(15 * msgTimerDelayScale));
             }
             await InvokeAsync(StateHasChanged);
         }

@@ -1,14 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
-using System.Linq;
 using Random = System.Random;
-using System.ComponentModel;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace TournamentFighter.Models
 {
     public class Character
     {
+        private record struct MutableStats(int Health, int Agility, int Defense, int Strength, int Accuracy)
+        {
+            public void SetAll(Stats stats)
+            {
+                Health = stats.Health; Agility = stats.Agility; Defense = stats.Defense;
+                Strength = stats.Strength; Accuracy = stats.Accuracy;
+            }
+        }
+
         [Required(ErrorMessage = "Name must not be blank")]
         [StringLength(10, ErrorMessage = "Max of 10 characters")]
         public string Name { get; set; } = "";
@@ -31,7 +36,6 @@ namespace TournamentFighter.Models
         public Status CurrentStatus { get; private set; } = Status.None;
         private int TurnsUntilStatusExpire = 0;
 
-        // Health + Agility + Defense + Strength + Accuracy = 350
         private MutableStats _actual = new MutableStats();
         private readonly Stats _init;
 
@@ -113,7 +117,7 @@ namespace TournamentFighter.Models
 
         public int TakeAttack(int incomingDamage, Move move, MsgTracker tracker)
         {
-            if (incomingDamage <= 0) { return 0; }
+            if (move == Move.None) { return 0; }
 
             int actualDamage = 0;
             if (_rng.Next(1, SKILL_CAP + 1) > (int)Math.Ceiling(0.15f * _actual.Agility)) // did not evade
@@ -125,10 +129,7 @@ namespace TournamentFighter.Models
             if (_actual.Health <= 0) { return actualDamage; }
 
             tracker.AddDamage(Name + " " + GetDmgMsg(actualDamage), actualDamage);
-            if (actualDamage > 0 && move.Status != Status.None)
-            {
-                AddStatus(move.Status, tracker);
-            }
+            if (actualDamage > 0 && move.Status != Status.None) { AddStatus(move.Status, tracker); }
 
             return actualDamage;
         }
@@ -138,7 +139,8 @@ namespace TournamentFighter.Models
             if (move.BaseDamage <= 0) { tracker.AddGame(Name + " " + move.Messages[0]); return 0; }
             tracker.AddMove(Name + " " + move.Messages[0], move);
 
-            int ceil = move.BaseAccuracy + ((_actual.Accuracy * _actual.Accuracy / (SKILL_CAP*SKILL_CAP)) * (SKILL_CAP - move.BaseAccuracy));
+            int ceil = move.BaseAccuracy + ((_actual.Accuracy * _actual.Accuracy / (SKILL_CAP*SKILL_CAP)) 
+                * (SKILL_CAP - move.BaseAccuracy));
             // The closer the character's accuracy is to SKILL_CAP, 100, the higher ceil is
             // ceil = moveAccuracy + (((charAccuracy^2)/(100^2))(100 - moveAccuracy))
             return _rng.Next(1, SKILL_CAP + 1) <= ceil ? move.BaseDamage + (int)(0.10f * _actual.Strength) : 0;

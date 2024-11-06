@@ -33,6 +33,13 @@ body { background-color: aliceblue; }
     padding: 1rem;
 }
 
+.champions {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-family: "VinerHandRegular";
+}
+
 @keyframes Appear {
     0% { opacity: 0; }
     100% { opacity: 1; }
@@ -220,8 +227,11 @@ body { background-color: aliceblue; }
     0% {
         transform: translateX(0) translateY(0);
     }
+    99% {
+        transform: translateX(0.4rem) translateY(-1.9rem);
+    }
     100% {
-        transform: translateX(-0.5rem) translateX(-0.6rem);
+        transform: scale(0);
     }
 }
 
@@ -242,10 +252,12 @@ body { background-color: aliceblue; }
 
 #damage-num {
     display: none;
-    position: relative;
-    top: 50px;
-    width: 3rem;
-    /*animation: Damage 1s ease-out;*/
+    position: fixed;
+    top: 40%;
+    left: 65%;
+    width: 8rem;
+    animation: Damage 1s ease-out;
+    animation-fill-mode: forwards;
 }
 
 #start-btn {

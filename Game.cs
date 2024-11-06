@@ -30,17 +30,10 @@ namespace TournamentFighter
     }
 
     public record Stats(int Health, int Agility, int Defense, int Strength, int Accuracy);
-    public record struct MutableStats(int Health, int Agility, int Defense, int Strength, int Accuracy)
-    {
-        public void SetAll(Stats stats)
-        {
-            Health = stats.Health; Agility = stats.Agility; Defense = stats.Defense;
-            Strength = stats.Strength; Accuracy = stats.Accuracy;
-        }
-    }
 
     public readonly record struct MsgPckg(Move Move, int DamageDealt);
     public readonly record struct Msg(MsgType Type, string Message, MsgPckg? Data = null);
+
     public class MsgTracker : Queue<Msg>
     {
         public void AddGame(string Message, MsgPckg? Data = null) => Enqueue(new(MsgType.Game, Message, Data));
@@ -57,6 +50,7 @@ namespace TournamentFighter
         private Move PlayerInput = Move.None;
 
         private const int MAX_MATCHES = 3;
+
         public int MatchNumber { get; private set; } = 1;
 
         private readonly CharacterList OpponentList = new CharacterList();
@@ -100,7 +94,6 @@ namespace TournamentFighter
                 tracker.AddGame("This is it, it's the final round! If " + Player.Name +
                     " wins this, they'll be crowned our new champion!");
             }
-
             tracker.AddGame("And here's their opponent. " + Opponent.Description);
         }
 
@@ -146,7 +139,7 @@ namespace TournamentFighter
                     tracker.Enqueue(new(MsgType.PlayerInput, "What will " + Player.Name + " do next??")); 
                 } else
                 {
-                    PlayerTurn(Player.NextAction(), tracker);
+                    TakeTurn(Player, Opponent, Player.NextAction(), tracker);
                 }
             }
             else
@@ -155,69 +148,42 @@ namespace TournamentFighter
                 {
                     Opponent.QueueRandomMove(); // simulate input from Opponent
                 }
-                OpponentTurn(Opponent.NextAction(), tracker);
+                TakeTurn(Opponent, Player, Opponent.NextAction(), tracker);
             }
         }
 
-        private void PlayerVictory(MsgTracker tracker)
+        private void Victory(Character victor, MsgTracker tracker)
         {
-            tracker.AddGame("WHOA, " + Opponent.Name + " is on the ground! Looks like they have something to say.");
-            tracker.Enqueue(new(MsgType.OpponentDialogue, Opponent.DefeatDialogue));
-            if (MatchNumber == MAX_MATCHES)
+            if (victor == Player)
             {
-                tracker.Enqueue(new(MsgType.NewChampion, Player.Name + " is our new IRONMAN tournament champion!" +
-                    " Well done " + Player.Name + "!"));
-            }
-            else
+                tracker.AddGame("WHOA, " + Opponent.Name + " is on the ground! Looks like they have something to say.");
+                tracker.Enqueue(new(MsgType.OpponentDialogue, Opponent.DefeatDialogue));
+                tracker.Enqueue(MatchNumber >= MAX_MATCHES ?
+                    new(MsgType.NewChampion, Player.Name + " is our new IRONMAN tournament champion!" +
+                        " Congratulations " + Player.Name + "! You will forever be remembered as a champion- now go out and enjoy your " +
+                        "newfound fame. We hope you'll come back to defend your title!")
+                    : new(MsgType.PlayerVictory, Player.Name + " wins! That's the end of this match, wow that was exciting!"));
+            } else
             {
-                tracker.Enqueue(new(MsgType.PlayerVictory, Player.Name + " wins! That's the end of this match, wow that was exciting!"));
+                tracker.Enqueue(new(MsgType.Game, "WHOA, " + Player.Name + " is on the ground. That was the finishing blow!"));
+                tracker.Enqueue(new(MsgType.OpponentDialogue, Opponent.GetVictoryLine()));
+                tracker.Enqueue(new(MsgType.OpponentVictory, Opponent.Name + " wins! That's the end of this match, wow that was exciting!"));
             }
         }
 
-        private void OpponentVictory(MsgTracker tracker)
+        private void TakeTurn(Character actor, Character target, Move move, MsgTracker tracker)
         {
-            tracker.Enqueue(new(MsgType.Game, "WHOA, " + Player.Name + " is on the ground. That was the finishing blow!"));
-            tracker.Enqueue(new(MsgType.OpponentDialogue, Opponent.GetVictoryLine()));
-            tracker.Enqueue(new(MsgType.OpponentVictory, Opponent.Name + " wins! That's the end of this match, wow that was exciting!"));
-        }
-
-        private void PlayerTurn(Move move, MsgTracker tracker)
-        {
-            Player.UpdateStatus(tracker);
-            if (Player.Health <= 0)
+            actor.UpdateStatus(tracker);
+            if (actor.Health <= 0)
             {
-                OpponentVictory(tracker);
-            }
-            else
+                Victory(target, tracker);
+            } else
             {
-                int attack = Player.AttackWith(move, tracker);
-                int damage = Opponent.TakeAttack(attack, move, tracker);
-
-                if (Opponent.Health <= 0)
+                int attack = actor.AttackWith(move, tracker);
+                target.TakeAttack(attack, move, tracker);
+                if (target.Health <= 0)
                 {
-                    PlayerVictory(tracker);
-                } else
-                {
-                    Turns.Enqueue(Turns.Dequeue());
-                }
-            }
-        }
-
-        private void OpponentTurn(Move move, MsgTracker tracker)
-        {
-            Opponent.UpdateStatus(tracker);
-            if (Opponent.Health <= 0)
-            {
-                PlayerVictory(tracker);
-            }
-            else
-            {
-                int attack = Opponent.AttackWith(move, tracker);
-                int damage = Player.TakeAttack(attack, move, tracker);
-
-                if (Player.Health <= 0)
-                {
-                    OpponentVictory(tracker);
+                    Victory(actor, tracker);
                 } else
                 {
                     Turns.Enqueue(Turns.Dequeue());

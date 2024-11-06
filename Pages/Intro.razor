@@ -5,9 +5,15 @@
 
 <PageTitle>Tournament Fighter</PageTitle>
 
-@if (enabledMusic)
+<audio id="intro" autoplay src="media/intro1.wav"></audio>
+
+@if (pressedStart)
 {
-    <!--<audio id="menu" autoplay src="@menuMusicSrc"></audio>-->
+    <audio id="button" autoplay src="@buttonSoundSrc"></audio>
+}
+@if (pressedSubmit)
+{
+    <audio id="button" autoplay src="@buttonSoundSrc"></audio>
 }
 
 @if (pressedStart)
@@ -57,6 +63,13 @@ else
     <h1 class="logo">TOURNAMENT</h1>
     <h1 class="logo logo-bottom">FIGHTER</h1>
     <button id="start-btn" class="btn-gold f-small" @onclick=@StartIntro>Start</button>
+    <div class="champions h-10 full-w row-center wrap">
+        <p class="f-xsmall">Champions:&nbsp;</p>
+        <p class="f-xxsmall">Bobby the Bull&nbsp;</p>
+        <p class="f-xxsmall">Bobby the Bull&nbsp;</p>
+        <p class="f-xxsmall">Bobby the Bull&nbsp;</p>
+        <p class="f-xxsmall">Bobby the Bull&nbsp;</p>
+    </div>
 }
 
 @code {
@@ -69,13 +82,13 @@ else
     private string? tagline;
 
     private bool pressedStart = false;
+    private bool pressedSubmit = false;
     private bool enteredName = false;
     private bool enteredTagline = false;
     private bool choseBuild = false;
     private string build = "";
 
-    private bool enabledMusic = false;
-    private string menuMusicSrc = "media/menu.wav";
+    private string buttonSoundSrc = "media/confirm1.wav";
 
     private int maxNameLength = 20;
     private int maxTaglineLength = 20;
@@ -137,6 +150,7 @@ else
     {
         if (enteredName && enteredTagline && choseBuild)
         {
+            pressedSubmit = true;
             Character player = new Character(playerStats, playerMoves)
                 {
                     Name = name,
