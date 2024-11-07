@@ -20,7 +20,7 @@ namespace TournamentFighter.Models
 
         [Required(ErrorMessage = "Tagline must not be blank")]
         [StringLength(15, ErrorMessage = "Max of 15 characters")]
-        public string? Tagline { get; set; } = "";
+        public string Tagline { get; set; } = "";
 
         public string? Description { get; set; } = "";
         public string OpeningDialogue { get; set; } = "";

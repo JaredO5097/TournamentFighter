@@ -7,6 +7,6 @@ namespace TournamentFighter.Data
     {
         public GameContext(DbContextOptions options): base(options) { }
 
-        public DbSet<Character> Characters { get; set; }
+        public DbSet<Champion> Champions { get; set; }
     }
 }

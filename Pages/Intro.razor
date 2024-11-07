@@ -63,12 +63,11 @@ else
     <h1 class="logo">TOURNAMENT</h1>
     <h1 class="logo logo-bottom">FIGHTER</h1>
     <button id="start-btn" class="btn-gold f-small" @onclick=@StartIntro>Start</button>
-    <div class="champions h-10 full-w row-center wrap">
-        <p class="f-xsmall">Champions:&nbsp;</p>
-        <p class="f-xxsmall">Bobby the Bull&nbsp;</p>
-        <p class="f-xxsmall">Bobby the Bull&nbsp;</p>
-        <p class="f-xxsmall">Bobby the Bull&nbsp;</p>
-        <p class="f-xxsmall">Bobby the Bull&nbsp;</p>
+    <div class="champions f-xsmall full-h col-start wrap">
+        @foreach (Champion c in champions)
+        {
+            <p class="f-xxsmall">@c.Name the @c.Tagline &nbsp;</p>
+        }
     </div>
 }
 
@@ -81,6 +80,8 @@ else
     private string? name;
     private string? tagline;
 
+    private Champion[] champions = [];
+
     private bool pressedStart = false;
     private bool pressedSubmit = false;
     private bool enteredName = false;
@@ -92,6 +93,11 @@ else
 
     private int maxNameLength = 20;
     private int maxTaglineLength = 20;
+
+    protected override void OnInitialized()
+    {
+        champions = Game.GetChampions();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

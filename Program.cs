@@ -1,4 +1,5 @@
 using TournamentFighter;
+using TournamentFighter.Data;
 
 internal class Program
 {
@@ -8,6 +9,7 @@ internal class Program
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
         builder.Services.AddSingleton<Game>();
+        builder.Services.AddSqlite<GameContext>("Data source=Champions.db");
 
         var app = builder.Build();
 

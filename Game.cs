@@ -1,4 +1,5 @@
-﻿using TournamentFighter.Models;
+﻿using TournamentFighter.Data;
+using TournamentFighter.Models;
 
 namespace TournamentFighter
 {
@@ -59,6 +60,34 @@ namespace TournamentFighter
         private Character Player;
         private Character Opponent;
         public (Character, Character) PlayerAndOpponent => (Player, Opponent);
+
+        private readonly IServiceScopeFactory _scopeFactory;
+
+        public Game(IServiceScopeFactory scopeFactory)
+        {
+            _scopeFactory = scopeFactory;
+        }
+
+        public void RecordChampion()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<GameContext>()!;
+                db.Champions.Add(new() { Name = Player.Name, Tagline = Player.Tagline });
+                db.SaveChanges();
+            }
+        }
+
+        public Champion[] GetChampions()
+        {
+            Champion[] res = [];
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<GameContext>()!;
+                res = db.Champions.ToArray();
+            }
+            return res;
+        }
 
         private void InitializeTurns()
         {

@@ -62,7 +62,7 @@
                 msgTimerDelayScale = 2.75f;
 
                 <audio id="fanfare" autoplay src="media/fanfare1.mp3"></audio>
-                <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">New Character</button>
+                <button class="btn-gold f-xsmall" @onclick="HandleNewChampion">New Character</button>
             } else
             {
                 <button class="btn-gold f-xxsmall" @onclick="ProgressGame" disabled="@(!readyForNext)">Next</button>
@@ -262,6 +262,11 @@
         playingBgm = false;
         Game.NextMatch();
         Navigation.Refresh();
+    }
+    private void HandleNewChampion()
+    {
+        Game.RecordChampion();
+        CreateNewCharacter();
     }
     private void CreateNewCharacter()
     {
