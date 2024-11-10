@@ -59,13 +59,14 @@
             } else if (CurrentMsg.Type == MsgType.NewChampion)
             {
                 playingBgm = false;
+                hideMenuButton = true;
                 msgTimerDelayScale = 2.75f;
 
                 <audio id="fanfare" autoplay src="media/fanfare1.mp3"></audio>
-                <button class="btn-gold f-xsmall" @onclick="HandleNewChampion">New Character</button>
+                <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">New Character</button>
             } else
             {
-                <button class="btn-gold f-xxsmall" @onclick="ProgressGame" disabled="@(!readyForNext)">Next</button>
+                <button class="btn-gold f-xxsmall" @onclick=@(() => ProgressGame()) disabled="@(!readyForNext)">Next</button>
             }
         </div>
         <div class="col full-h evenly w-15">
@@ -84,12 +85,16 @@
                 <button class="@(themeStr == "astro" ? "btn-radio-active" : "")
                     btn-radio f-xxsmall" type="button" @onclick=@SetAstroTheme>Astro</button>
             </div>
-            @if (canReturnToMain)
+            @if (!hideMenuButton)
             {
-                <button class="btn-gold f-xxsmall" type="button" @onclick="CreateNewCharacter">Sure?</button>
-            } else
-            {
-                <button class="btn-gold f-xxsmall" type="button" @onclick="AllowReturnToMain">MENU</button>
+                @if (canReturnToMain)
+                {
+                    <button class="btn-gold f-xxsmall" type="button" @onclick="CreateNewCharacter">Sure?</button>
+                }
+                else
+                {
+                    <button class="btn-gold f-xxsmall" type="button" @onclick="AllowReturnToMain">MENU</button>
+                }
             }
         </div>
     </div>
@@ -108,9 +113,9 @@
     private Character Player;
     private Character Opponent;
 
-    private static Timer _menuTimer = new Timer();
+    private static Timer _menuTimer = new();
     private static Task? _typeOutMsg;
-    private CancellationTokenSource _ts = new CancellationTokenSource();
+    private CancellationTokenSource _ts = new();
     private float msgTimerDelayScale = 1f;
 
     private static readonly Random _rng = new();
@@ -118,11 +123,10 @@
     private RenderFragment? CurrentTheme = null;
     private string themeStr = "default";
 
-    private MsgTracker MessageTracker = new MsgTracker();
     private Msg CurrentMsg = new(MsgType.Empty, "");
-    private StringBuilder baseMsg = new StringBuilder();
-    private StringBuilder dynamicMsg = new StringBuilder();
-    private StringBuilder damageMsg = new StringBuilder();
+    private StringBuilder baseMsg = new();
+    private StringBuilder dynamicMsg = new();
+    private StringBuilder damageMsg = new();
 
     private string msgStyle = "";
     private string damageStyle = "";
@@ -132,6 +136,7 @@
     private string chosenMove = "";
     private bool readyForNext = true;
 
+    private bool hideMenuButton = false;
     private bool canReturnToMain = false;
 
     private bool playingMoveAudio = false;
@@ -189,14 +194,11 @@
         _menuTimer.Interval = 3000;
         _menuTimer.Elapsed += OnMainTimeout;
 
-        MessageTracker.Clear();
-        Game.SetIntroMessages(MessageTracker);
-
         readyForNext = true;
 
         bgmAudioSrc = Songs[_rng.Next(0, Songs.Count)];
         playingBgm = true;
-        ProgressGame();
+        ProgressGame(Game.LastMsg.HasValue);
     }
 
     private void Reset()
@@ -210,16 +212,11 @@
         damageMsg.Clear();
     }
 
-    private async void ProgressGame()
+    private void ProgressGame(bool useLastMsg = false)
     {
         Reset();
 
-        if (MessageTracker.Count == 0)
-        {
-            Game.NextTurn(MessageTracker);
-        }
-
-        CurrentMsg = MessageTracker.Dequeue();
+        CurrentMsg = useLastMsg ? Game.LastMsg!.Value : Game.NextMsg();
         baseMsg.Append(CurrentMsg.Message);
         dynamicMsg.Append(' ', baseMsg.Length);
         _ts = new CancellationTokenSource();
@@ -262,11 +259,6 @@
         playingBgm = false;
         Game.NextMatch();
         Navigation.Refresh();
-    }
-    private void HandleNewChampion()
-    {
-        Game.RecordChampion();
-        CreateNewCharacter();
     }
     private void CreateNewCharacter()
     {
