@@ -1,5 +1,4 @@
 ﻿@page "/battle"
-@page "/battle/{themeId}/{playMusic}"
 @inherits ComponentBase
 @inject Game Game
 @inject NavigationManager Navigation
@@ -113,9 +112,6 @@
 </div>
 
 @code {
-    [Parameter] public string? themeId { get; set; }
-    [Parameter] public bool? playMusic { get; set; }
-
     private Character Player;
     private Character Opponent;
 
