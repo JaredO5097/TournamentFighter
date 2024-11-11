@@ -42,11 +42,15 @@ namespace TournamentFighter
         public void AddDamage(string Message, int Damage) => Enqueue(new(MsgType.Damage, Message, new(Move.None, Damage)));
     }
 
+    public readonly record struct ClientState(string Theme, bool PlayMusic);
+
     public class Game
     {
         private readonly Queue<Turn> Turns_G = new();
         private readonly MsgTracker Tracker_G = new();
         private static readonly Random Rng_G = new();
+
+        public ClientState? StoredState;
 
         public Msg? LastMsg { get; private set; }
         private Move PlayerInput = Move.None;

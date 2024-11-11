@@ -1,4 +1,5 @@
 ﻿@page "/battle"
+@page "/battle/{themeId}/{playMusic}"
 @inherits ComponentBase
 @inject Game Game
 @inject NavigationManager Navigation
@@ -50,8 +51,10 @@
             @if (CurrentMsg.Type == MsgType.OpponentVictory)
             {
                 readyForNext = false;
-                <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">New Character</button>
-                <button class="btn-gold f-xsmall" @onclick="TryAgain">Try Again</button>
+                <div class="col-center around h-30">
+                    <button class="btn-gold f-xsmall" @onclick="CreateNewCharacter">New Character</button>
+                    <button class="btn-gold f-xsmall" @onclick="TryAgain">Try Again</button>
+                </div>
             } else if (CurrentMsg.Type == MsgType.PlayerVictory)
             {
                 readyForNext = false;
@@ -110,6 +113,9 @@
 </div>
 
 @code {
+    [Parameter] public string? themeId { get; set; }
+    [Parameter] public bool? playMusic { get; set; }
+
     private Character Player;
     private Character Opponent;
 
@@ -189,6 +195,7 @@
 
     protected override void OnInitialized()
     {
+
         (Player, Opponent) = Game.PlayerAndOpponent;
 
         _menuTimer.Interval = 3000;
@@ -198,6 +205,17 @@
 
         bgmAudioSrc = Songs[_rng.Next(0, Songs.Count)];
         playingBgm = true;
+
+        if (Game.StoredState.HasValue)
+        {
+            themeStr = Game.StoredState.Value.Theme;
+            playingBgm = Game.StoredState.Value.PlayMusic;
+            if (themeStr == "default") { SetDefaultTheme(); }
+            else if (themeStr == "pink") { SetPinkTheme(); }
+            else if (themeStr == "aqua") { SetAquaticTheme(); }
+            else if (themeStr == "astro") { SetAstroTheme(); }
+        }
+
         ProgressGame(Game.LastMsg.HasValue);
     }
 
@@ -212,11 +230,11 @@
         damageMsg.Clear();
     }
 
-    private void ProgressGame(bool useLastMsg = false)
+    private void ProgressGame(bool replayLastMsg = false)
     {
         Reset();
 
-        CurrentMsg = useLastMsg ? Game.LastMsg!.Value : Game.NextMsg();
+        CurrentMsg = replayLastMsg ? Game.LastMsg!.Value : Game.NextMsg();
         baseMsg.Append(CurrentMsg.Message);
         dynamicMsg.Append(' ', baseMsg.Length);
         _ts = new CancellationTokenSource();
@@ -256,16 +274,22 @@
 
     private void NextMatch()
     {
+        Game.StoredState = new(themeStr, playingBgm);
+
         playingBgm = false;
         Game.NextMatch();
         Navigation.Refresh();
     }
     private void CreateNewCharacter()
     {
+        Game.StoredState = new(themeStr, playingBgm);
+
         Navigation.NavigateTo("/");
     }
     private void TryAgain()
     {
+        Game.StoredState = new(themeStr, playingBgm);
+        
         playingBgm = false;
         Game.InitializeNewGame(Player);
         Navigation.Refresh();
@@ -327,11 +351,11 @@
                                 .stats {
                                     font-family: "InkFreeRegular";
                                 }
-                                .u-player, .u-opponent {
-                                    text-decoration: underline wavy white;
-                                }
                                 .dialogue {
                                     font-family: "KristenRegular";
+                                }
+                                .u-player, .u-opponent {
+                                    text-decoration: underline wavy white;
                                 }
                                 .btn-radio {
                                     border: 2px solid darkviolet;
@@ -349,6 +373,25 @@
                                 body {
                                     background-color: lightblue;
                                 }
+                                .stats {
+                                    font-family: "Papyrus";
+                                }
+                                .dialogue {
+                                    font-family: "SegoePrintReg";
+                                }
+                                .u-player {
+                                    text-decoration: underline solid orange;
+                                }
+                                .u-opponent {
+                                    text-decoration: underline solid red;
+                                }
+                                .btn-radio {
+                                    border: 2px solid green;
+                                }
+                                .btn-gold {
+                                    background: linear-gradient(270deg, violet, yellow);
+                                    background-size: 400% 400%;
+                                }
                         </style>;
     }
     public void SetAstroTheme()
@@ -356,7 +399,30 @@
         themeStr = "astro";
         CurrentTheme = @<style>
                                 body {
-                                    background-color: whitesmoke;
+                                    background-color: black;
+                                }
+                                .stats, .dialogue, #damage-num {
+                                    color: whitesmoke;
+                                }
+                                .stats {
+                                    font-family: "ErasMedium";
+                                }
+                                .dialogue {
+                                    font-family: "OCRExtended";
+                                }
+                                .u-player {
+                                    text-decoration: underline solid orangered;
+                                }
+                                .u-opponent {
+                                    text-decoration: underline solid purple;
+                                }
+                                .btn-radio {
+                                    border: 2px solid orangered;
+                                }
+                                .btn-gold {
+                                    color: whitesmoke;
+                                    background: linear-gradient(270deg, orangered, purple);
+                                    background-size: 400% 400%;
                                 }
                         </style>;
     }

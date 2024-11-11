@@ -6,6 +6,9 @@
 @font-face { font-family: "VinerHandRegular"; src: url("../fonts/VINERITC.TTF"); }
 @font-face { font-family: "KristenRegular"; src: url("../fonts/ITCKRIST.TTF"); }
 @font-face { font-family: "InkFreeRegular"; src: url("../fonts/INKFREE.TTF"); }
+@font-face { font-family: "OCRExtended"; src: url("../fonts/OCRAEXT.TTF"); }
+@font-face { font-family: "SegoePrintReg"; src: url("../fonts/SEGOEPR.TTF"); }
+@font-face { font-family: "Papyrus"; src: url("../fonts/PAPYRUS.TTF"); }
 
 * {
     box-sizing: border-box;
@@ -87,7 +90,7 @@ body { background-color: aliceblue; }
     text-decoration: none;
     text-align: center;
     width: 100%;
-    padding: 5px 30px 5px 30px;
+    padding: 0.5rem 2rem 0.5rem 2rem;
     background-color: none;
     border: 2px solid black;
     cursor: pointer;
@@ -113,6 +116,7 @@ body { background-color: aliceblue; }
     font-family: JetBrainsMono;
     text-decoration: none;
     padding: 5px 30px 5px 30px;
+    border: none;
     background: linear-gradient(270deg, #69DE74, #FF8B8B);
     background-size: 400% 400%;
     color: black;
@@ -266,4 +270,17 @@ body { background-color: aliceblue; }
     top: 80%;
     left: 82.5%;
     transform: rotate(7.5deg);
+}
+
+@media (max-width: 1500px) {
+    html { font-size: 13px; }
+}
+@media (max-width: 1200px) {
+    html { font-size: 11px; }
+}
+@media (max-width: 900px) {
+    html { font-size: 9px; }
+}
+@media (max-width: 600px) {
+    html { font-size: 5px; }
 }
