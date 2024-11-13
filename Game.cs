@@ -44,33 +44,27 @@ namespace TournamentFighter
 
     public readonly record struct ClientState(string Theme, bool PlayMusic);
 
-    public class Game
+    public class Game(IServiceScopeFactory scopeFactory)
     {
-        private readonly Queue<Turn> Turns_G = new();
-        private readonly MsgTracker Tracker_G = new();
-        private static readonly Random Rng_G = new();
+        private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+
+        private readonly Queue<Turn> _turns = new();
+        private readonly MsgTracker _tracker = new();
+        private static readonly Random _rng = new();
 
         public ClientState? StoredState;
-
         public Msg? LastMsg { get; private set; }
-        private Move PlayerInput = Move.None;
+        public Move PlayerInput = Move.None;
 
         private const int MAX_MATCHES = 3;
-        public int MatchNumber { get; private set; } = 1;
+        private int _matchNumber = 1;
 
-        private readonly CharacterList OpponentList = new CharacterList();
-        private Queue<Character> OpponentQueue = new Queue<Character>();
+        private readonly CharacterList Characters = new();
+        private Queue<Character> OpponentQueue = new();
 
-        private Character Player;
-        private Character Opponent;
+        private Character Player = new();
+        private Character Opponent = new();
         public (Character, Character) PlayerAndOpponent => (Player, Opponent);
-
-        private readonly IServiceScopeFactory _scopeFactory;
-
-        public Game(IServiceScopeFactory scopeFactory)
-        {
-            _scopeFactory = scopeFactory;
-        }
 
         private void RecordChampion()
         {
@@ -95,87 +89,79 @@ namespace TournamentFighter
 
         private void InitializeTurns()
         {
-            Turns_G.Clear();
-            bool playerFaster = Player.Agility == Opponent.Agility ? Rng_G.Next(0, 2) > 0 : Player.Agility > Opponent.Agility;
+            _turns.Clear();
+            bool playerFaster = Player.Agility == Opponent.Agility ? _rng.Next(0, 2) > 0 : Player.Agility > Opponent.Agility;
             if (playerFaster)
             {
-                Turns_G.Enqueue(Turn.Player);
-                Turns_G.Enqueue(Turn.Opponent);
+                _turns.Enqueue(Turn.Player);
+                _turns.Enqueue(Turn.Opponent);
             }
             else
             {
-                Turns_G.Enqueue(Turn.Opponent);
-                Turns_G.Enqueue(Turn.Player);
+                _turns.Enqueue(Turn.Opponent);
+                _turns.Enqueue(Turn.Player);
             }
         }
 
         private void SetIntroMessages()
         {
-            if (MatchNumber == 1)
+            if (_matchNumber == 1)
             {
-                Tracker_G.AddGame("Welcome ladies and gentlemen, to the annual IRONMAN tournament!\n" +
+                _tracker.AddGame("Welcome ladies and gentlemen, to the annual IRONMAN tournament!\n" +
                     "It's a bright sunny day here, and we've got some great fighters for you this year!\n" +
                     "Here comes our first one, " + Player.Name + "! They look like they're here to win!");
             }
-            else if (MatchNumber == 2)
+            else if (_matchNumber == 2)
             {
-                Tracker_G.AddGame(Player.Name + " has moved on to the second round!\n" +
+                _tracker.AddGame(Player.Name + " has moved on to the second round!\n" +
                     "But can they keep up their momentum??");
             }
-            else if (MatchNumber == 3)
+            else if (_matchNumber == 3)
             {
-                Tracker_G.AddGame("This is it, it's the final round! If " + Player.Name +
+                _tracker.AddGame("This is it, it's the final round! If " + Player.Name +
                     " wins this, they'll be crowned our new champion!");
             }
-            Tracker_G.AddGame("And here's their opponent. " + Opponent.Description);
+            _tracker.AddGame("And here's their opponent. " + Opponent.Description);
         }
 
         public Msg NextMsg()
         {
-            if (Tracker_G.Count == 0)
+            if (_tracker.Count == 0)
             {
                 NextTurn();
             }
-            LastMsg = Tracker_G.Dequeue();
+            LastMsg = _tracker.Dequeue();
             return LastMsg.Value;
         }
 
-        public void InitializeNewGame(Character playerModel)
+        public void StartNextMatch(Character? newPlayer = null)
         {
-            Player = playerModel;
-            Player.Refresh();
-
-            MatchNumber = 1;
-            OpponentQueue = OpponentList.GetUniqueSet(MAX_MATCHES, Rng_G);
-            Opponent = OpponentQueue.Dequeue();
-            Opponent.Refresh();
-
-            InitializeTurns();
-            LastMsg = null;
-            Tracker_G.Clear();
-            SetIntroMessages();
-        }
-
-        public void NextMatch()
-        {
-            MatchNumber++;
-            if (MatchNumber <= MAX_MATCHES)
+            if (newPlayer is not null)
             {
+                Player = newPlayer;
+                _matchNumber = 1;
+                OpponentQueue = Characters.GetUniqueSet(MAX_MATCHES, _rng);
+            } else
+            {
+                _matchNumber++;
+            }
+            
+            if (_matchNumber <= MAX_MATCHES)
+            {
+                Player.Refresh();
                 Opponent = OpponentQueue.Dequeue();
                 Opponent.Refresh();
-                Player.Refresh();
+
                 InitializeTurns();
                 LastMsg = null;
-                Tracker_G.Clear();
+                _tracker.Clear();
                 SetIntroMessages();
             }
         }
 
-        public void RecordPlayerMove(Move move) => PlayerInput = move;
-
         public void NextTurn() 
         {
-            if (Turns_G.Peek() == Turn.Player)
+            if (_turns.Peek() == Turn.Player)
             {
                 if (PlayerInput != Move.None)
                 {
@@ -185,7 +171,7 @@ namespace TournamentFighter
 
                 if (!Player.HasActions)
                 {
-                    Tracker_G.Enqueue(new(MsgType.PlayerInput, "What will " + Player.Name + " do next??")); 
+                    _tracker.Enqueue(new(MsgType.PlayerInput, "What will " + Player.Name + " do next??")); 
                 } else
                 {
                     TakeTurn(Player, Opponent, Player.NextAction());
@@ -195,7 +181,7 @@ namespace TournamentFighter
             {
                 if (!Opponent.HasActions)
                 {
-                    Opponent.QueueRandomMove(); // simulate input from Opponent
+                    Opponent.QueueRandomMove(_rng); // simulate input from Opponent
                 }
                 TakeTurn(Opponent, Player, Opponent.NextAction());
             }
@@ -205,42 +191,42 @@ namespace TournamentFighter
         {
             if (victor == Player)
             {
-                Tracker_G.AddGame("WHOA, " + Opponent.Name + " is on the ground! Looks like they have something to say.");
-                Tracker_G.Enqueue(new(MsgType.OpponentDialogue, Opponent.DefeatDialogue));
-                if (MatchNumber >= MAX_MATCHES)
+                _tracker.AddGame("WHOA, " + Opponent.Name + " is on the ground! Looks like they have something to say.");
+                _tracker.Enqueue(new(MsgType.OpponentDialogue, Opponent.DefeatDialogue));
+                if (_matchNumber >= MAX_MATCHES)
                 {
-                    Tracker_G.Enqueue(new(MsgType.NewChampion, Player.Name + " is our new IRONMAN tournament champion!" +
+                    _tracker.Enqueue(new(MsgType.NewChampion, Player.Name + " is our new IRONMAN tournament champion!" +
                         " Congratulations " + Player.Name + "! You will forever be remembered as a champion- now go out and enjoy your " +
                         "newfound fame!"));
                     RecordChampion();
                 } else
                 {
-                    Tracker_G.Enqueue(new(MsgType.PlayerVictory, Player.Name + " wins! That's the end of this match, wow that was exciting!"));
+                    _tracker.Enqueue(new(MsgType.PlayerVictory, Player.Name + " wins! That's the end of this match, wow that was exciting!"));
                 }
             } else
             {
-                Tracker_G.Enqueue(new(MsgType.Game, "WHOA, " + Player.Name + " is on the ground. That was the finishing blow!"));
-                Tracker_G.Enqueue(new(MsgType.OpponentDialogue, Opponent.GetVictoryLine()));
-                Tracker_G.Enqueue(new(MsgType.OpponentVictory, Opponent.Name + " wins! That's the end of this match, wow that was exciting!"));
+                _tracker.Enqueue(new(MsgType.Game, "WHOA, " + Player.Name + " is on the ground. That was the finishing blow!"));
+                _tracker.Enqueue(new(MsgType.OpponentDialogue, Opponent.GetVictoryLine()));
+                _tracker.Enqueue(new(MsgType.OpponentVictory, Opponent.Name + " wins! That's the end of this match, wow that was exciting!"));
             }
         }
 
         private void TakeTurn(Character actor, Character target, Move move)
         {
-            actor.UpdateStatus(Tracker_G);
+            actor.UpdateStatus(_tracker);
             if (actor.Health <= 0)
             {
                 Victory(target);
             } else
             {
-                int attack = actor.AttackWith(move, Tracker_G);
-                target.TakeAttack(attack, move, Tracker_G);
+                int attack = actor.AttackWith(move, _tracker, _rng);
+                target.TakeAttack(attack, move, _tracker, _rng);
                 if (target.Health <= 0)
                 {
                     Victory(actor);
                 } else
                 {
-                    Turns_G.Enqueue(Turns_G.Dequeue());
+                    _turns.Enqueue(_turns.Dequeue());
                 }
             }
         }

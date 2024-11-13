@@ -72,8 +72,8 @@ else
 }
 
 @code {
-    private Stats playerStats;
-    private Move[] playerMoves;
+    private Stats playerStats = new(70, 70, 70, 70, 70);
+    private Move[] playerMoves = [Move.None];
 
     private ElementReference nameInput;
     private ElementReference taglineInput;
@@ -90,9 +90,6 @@ else
     private string build = "";
 
     private string buttonSoundSrc = "media/confirm1.wav";
-
-    private int maxNameLength = 20;
-    private int maxTaglineLength = 20;
 
     protected override void OnInitialized()
     {
@@ -159,10 +156,10 @@ else
             pressedSubmit = true;
             Character player = new Character(playerStats, playerMoves)
                 {
-                    Name = name,
-                    Tagline = tagline,
+                    Name = name!,
+                    Tagline = tagline!,
                 };
-            Game.InitializeNewGame(player);
+            Game.StartNextMatch(player);
             Navigation.NavigateTo("/battle");
         }
     }

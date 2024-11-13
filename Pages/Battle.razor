@@ -7,7 +7,7 @@
 
 @if (playingBgm)
 {
-    <audio id="bgm" autoplay src="@bgmAudioSrc"></audio>
+    <audio id="bgm" autoplay loop src="@bgmAudioSrc"></audio>
 }
 @if (playingMoveAudio)
 {
@@ -112,11 +112,10 @@
 </div>
 
 @code {
-    private Character Player;
-    private Character Opponent;
+    private Character Player = new();
+    private Character Opponent = new();
 
     private static Timer _menuTimer = new();
-    private static Task? _typeOutMsg;
     private CancellationTokenSource _ts = new();
     private float msgTimerDelayScale = 1f;
 
@@ -150,6 +149,8 @@
     {
         "media/music1.wav",
         "media/music3.wav",
+        "media/music5.mp3",
+        "media/music6.mp3",
     };
 
     private readonly Dictionary<Move, string> MoveSounds = new()
@@ -191,7 +192,6 @@
 
     protected override void OnInitialized()
     {
-
         (Player, Opponent) = Game.PlayerAndOpponent;
 
         _menuTimer.Interval = 3000;
@@ -263,7 +263,7 @@
 
     private void RecordMove(Move move)
     {
-        Game.RecordPlayerMove(move);
+        Game.PlayerInput = move;
         readyForNext = true;
         chosenMove = move.Name;
     }
@@ -273,7 +273,7 @@
         Game.StoredState = new(themeStr, playingBgm);
 
         playingBgm = false;
-        Game.NextMatch();
+        Game.StartNextMatch();
         Navigation.Refresh();
     }
     private void CreateNewCharacter()
@@ -285,9 +285,9 @@
     private void TryAgain()
     {
         Game.StoredState = new(themeStr, playingBgm);
-        
+
         playingBgm = false;
-        Game.InitializeNewGame(Player);
+        Game.StartNextMatch(Player);
         Navigation.Refresh();
     }
 

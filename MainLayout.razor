@@ -2,27 +2,6 @@
 
 <CascadingValue Value="this">
     <header>
-        <!--<nav id="main-nav">
-            @if (logoActive)
-            {
-                <NavLink id="nav-logo" href="">TF</NavLink>
-            }
-            <div class="col">
-                <button type="button" class="btn-gold btn-small" @onclick=@ToggleMenu>MENU</button>
-
-                @if (menuActive)
-                {
-                    <div class="col w-20 absolute s-plain wrap">
-                        <button type="button" class="btn-gold btn-small" @onclick=@ToggleMenu>X</button>
-                        <h3>About</h3>
-                        <p>
-                            Tournament Fighter is a fighting game. Defeat your opponents, and win the tournament!
-                        </p>
-                        <NavLink href="">RETURN TO HOME PAGE</NavLink>
-                    </div>
-                }
-            </div>
-        </nav>-->
     </header>
     <main>
         @Body
@@ -30,25 +9,3 @@
     <footer>
     </footer>
 </CascadingValue>
-
-@code {
-    private bool logoActive = true;
-    private bool menuActive = false;
-
-    public void ToggleLogo(bool active)
-    {
-        logoActive = active;
-        StateHasChanged();
-    }
-
-    public void DisableMenu()
-    {
-        menuActive = false;
-        StateHasChanged();
-    }
-
-    private void ToggleMenu()
-    {
-        menuActive = !menuActive;
-    }
-}

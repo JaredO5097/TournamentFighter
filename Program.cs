@@ -8,7 +8,7 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
-        builder.Services.AddSingleton<Game>();
+        builder.Services.AddSingleton<Game>();  
         builder.Services.AddSqlite<GameContext>("Data source=Champions.db");
 
         var app = builder.Build();

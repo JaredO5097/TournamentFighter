@@ -22,8 +22,7 @@ namespace TournamentFighter.Models
         [StringLength(15, ErrorMessage = "Max of 15 characters")]
         public string Tagline { get; set; } = "";
 
-        public string? Description { get; set; } = "";
-        public string OpeningDialogue { get; set; } = "";
+        public string Description { get; set; } = "";
         public string VictoryLineHighHP { get; set; } = "";
         public string VictoryLineMediumHP { get; set; } = "";
         public string VictoryLineLowHP { get; set; } = "";
@@ -31,20 +30,20 @@ namespace TournamentFighter.Models
 
         public readonly Move[] Moves = [Move.None];
 
-        private readonly Queue<Move> Actions = new Queue<Move>();
+        private readonly Queue<Move> Actions = new();
 
         public Status CurrentStatus { get; private set; } = Status.None;
         private int TurnsUntilStatusExpire = 0;
 
-        private MutableStats _actual = new MutableStats();
-        private readonly Stats _init;
+        private MutableStats _actual = new();
+        private readonly Stats _init = new(1, 1, 1, 1, 1);
 
         public int Health => _actual.Health;
         public int Agility => _init.Agility;
 
         private const int SKILL_CAP = 100;
-        private readonly static Random _rng = new Random();
 
+        public Character() { }
         public Character(Stats stats, Move[] moves)
         {
             _init = stats;
@@ -115,12 +114,12 @@ namespace TournamentFighter.Models
             TurnsUntilStatusExpire = 2;
         }
 
-        public int TakeAttack(int incomingDamage, Move move, MsgTracker tracker)
+        public int TakeAttack(int incomingDamage, Move move, MsgTracker tracker, Random rng)
         {
             if (move == Move.None) { return 0; }
 
             int actualDamage = 0;
-            if (_rng.Next(1, SKILL_CAP + 1) > (int)Math.Ceiling(0.15f * _actual.Agility)) // did not evade
+            if (rng.Next(1, SKILL_CAP + 1) > (int)Math.Ceiling(0.15f * _actual.Agility)) // did not evade
             {
                 actualDamage = incomingDamage - (int)(0.75f * _actual.Defense);
                 if (actualDamage < 0) { actualDamage = 0; }
@@ -134,16 +133,16 @@ namespace TournamentFighter.Models
             return actualDamage;
         }
 
-        public int AttackWith(Move move, MsgTracker tracker)
+        public int AttackWith(Move move, MsgTracker tracker, Random rng)
         {
-            if (move.BaseDamage <= 0) { tracker.AddGame(Name + " " + move.Messages[0]); return 0; }
-            tracker.AddMove(Name + " " + move.Messages[0], move);
+            if (move.BaseDamage <= 0) { tracker.AddGame(Name + " " + move.Message); return 0; }
+            tracker.AddMove(Name + " " + move.Message, move);
 
             int ceil = move.BaseAccuracy + ((_actual.Accuracy * _actual.Accuracy / (SKILL_CAP*SKILL_CAP)) 
                 * (SKILL_CAP - move.BaseAccuracy));
             // The closer the character's accuracy is to SKILL_CAP, 100, the higher ceil is
             // ceil = moveAccuracy + (((charAccuracy^2)/(100^2))(100 - moveAccuracy))
-            return _rng.Next(1, SKILL_CAP + 1) <= ceil ? move.BaseDamage + (int)(0.10f * _actual.Strength) : 0;
+            return rng.Next(1, SKILL_CAP + 1) <= ceil ? move.BaseDamage + (int)(0.10f * _actual.Strength) : 0;
         }
 
         public string GetVictoryLine()
@@ -170,9 +169,9 @@ namespace TournamentFighter.Models
             _ => "took a hit!"
         };
 
-        public void QueueRandomMove()
+        public void QueueRandomMove(Random rng)
         {
-            Move move = Moves[_rng.Next(0, Moves.Length)];
+            Move move = Moves[rng.Next(0, Moves.Length)];
             QueueMove(move);
         }
 

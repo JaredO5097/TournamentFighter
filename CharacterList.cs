@@ -12,9 +12,6 @@ namespace TournamentFighter
             {
                 Name = "Ryalt",
                 Tagline = "Sly Archer",
-                OpeningDialogue = "You must be my opponent. My name is Ryalt, I’m a proud warrior from my country.\n" +
-                              "I’ve never lost a fight and I certainly won’t be breaking my winning streak today.\n" +
-                              "Now come on, prepare yourself!",
                 Description = "This guy looks fast. He's not wearing any armor too, just long sleeves and pants.\n" +
                           "And is that a bow? Looks like we have an archer ladies and gentlemen!",
                 VictoryLineHighHP = "My arrows always point me to victory!",
@@ -26,8 +23,6 @@ namespace TournamentFighter
             {
                 Name = "Dejourn",
                 Tagline = "Burly Axe Wielder",
-                OpeningDialogue = "Hoo, sorry you have to face me. My axe will cut you so deep that you'll " +
-                              "be in the hospital for weeks. Now, let's see if you can give me a good challenge!!",
                 Description = "WHOA now those are some muscles! He makes that axe on his back look small!\n" +
                           "And no armor except for a breast plate? I think we're gonna see some real power from this guy!",
                 VictoryLineHighHP = "HA HA HA that just felt like squashing a bug!",
@@ -39,8 +34,6 @@ namespace TournamentFighter
             {
                 Name = "Hina",
                 Tagline = "Fiery Martial Artist",
-                OpeningDialogue = "My weapon of choice is my own body. No one here has been worthy of my respect, " +
-                              "so I ask you to come at me with all you have- I'm bored.",
                 Description = "This girl looks fierce, I think she'd kill me if I just looked at her the wrong way!\n" +
                           "It looks like her hands are wrapped too, she's going to deliver some pain with her fists!",
                 VictoryLineHighHP = "Pathetic.",
@@ -52,9 +45,6 @@ namespace TournamentFighter
             {
                 Name = "Grizwald",
                 Tagline = "Mysterious Professor",
-                OpeningDialogue = "Greetings! I'm Professor Grizwald! During my adventures, I have come across many " +
-                              "mystical spells from an unidentified civilization! I have been searching for a way to " +
-                              "relieve some stress, and I figured, let's try out these spells! Best of luck!",
                 Description = "Ladies and gentlemen, it's Professor Grizwald! Looking as gentlemanly as ever.\n" +
                           "What a great hat Professor! The Professor likes to go explore ruins, " +
                           "I wonder if he found some kind of weapon!?",
@@ -67,7 +57,6 @@ namespace TournamentFighter
             {
                 Name = "Number 5",
                 Tagline = "Reassembled",
-                OpeningDialogue = "Howdy partner",
                 Description = "Is that a robot, and is it talking?? It sure is saying some weird stuff but it looks like it's " +
                           "built for combat. This should be an interesting fight!",
                 VictoryLineHighHP = "NUMBER 5 IS ALIVE",
